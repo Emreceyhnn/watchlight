@@ -1,0 +1,162 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EventType {
+  AUTH_LOGIN
+  AUTH_FAILED
+  NETWORK_CONNECT
+  NETWORK_SCAN
+  FILE_ACCESS
+  PROCESS_EXEC
+  DATA_TRANSFER
+  API_CALL
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  ASSIGNED
+  TRIAGED
+  RESOLVED
+  CLOSED
+}
+
+enum IncidentPriority {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  MITIGATED
+  CLOSED
+}
+
+enum Role {
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+enum IncidentAction {
+  COMMENT
+  STATUS_CHANGE
+  ASSIGN
+  MITIGATION
+}
+
+model SecurityEvent {
+  id          String      @id @default(cuid())
+  timestamp   DateTime    @default(now())
+  type        EventType
+  sourceIp    String
+  destIp      String?
+  sourcePort  Int?
+  destPort    Int?
+  username    String?
+  userAgent   String?
+  path        String?
+  payload     Json?
+  geoCountry  String?
+  createdAt   DateTime    @default(now())
+
+  @@index([timestamp])
+  @@index([sourceIp])
+  @@index([type])
+  @@index([username])
+}
+
+model Rule {
+  id              String      @id @default(cuid())
+  name            String      @unique
+  description     String
+  eventTypes      EventType[]
+  windowSec       Int         @default(600) // 10 dakika
+  threshold       Int         @default(5)
+  severity        Severity    @default(MEDIUM)
+  attackTactic    String
+  attackTechnique String      // Örn: T1110.001
+  attackName      String
+  enabled         Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  alerts          Alert[]
+}
+
+model Alert {
+  id          String      @id @default(cuid())
+  ruleId      String
+  rule        Rule        @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  triggeredAt DateTime    @default(now())
+  sourceIp    String
+  username    String?
+  eventCount  Int
+  status      AlertStatus @default(OPEN)
+  severity    Severity
+  incident    Incident?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([status])
+  @@index([triggeredAt])
+  @@index([sourceIp])
+  @@index([severity])
+}
+
+model Incident {
+  id        String          @id @default(cuid())
+  alertId   String          @unique
+  alert     Alert           @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  title     String
+  summary   String?
+  assignee  String?
+  priority  IncidentPriority @default(P2)
+  status    IncidentStatus   @default(OPEN)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  timeline  IncidentEvent[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assignee])
+}
+
+model IncidentEvent {
+  id         String         @id @default(cuid())
+  incidentId String
+  incident   Incident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  actor      String
+  action     IncidentAction
+  note       String?
+  createdAt  DateTime       @default(now())
+
+  @@index([incidentId])
+  @@index([createdAt])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(ANALYST)
+  password  String   // bcrypt veya argon2 hash
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}

@@ -1,0 +1,43 @@
+version: "3.8"
+
+# Sadece local geliştirme için: Postgres + Redis'i host'a (127.0.0.1) açar.
+# Web/worker/simulator `pnpm dev` ile native çalıştırılır.
+# Prod'da bunun yerine docker-compose.yml kullanılır (DB/Redis internet'e kapalı).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: watchlight-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-watchlight_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-watchlight_soc}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-watchlight_user} -d ${POSTGRES_DB:-watchlight_soc}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: watchlight-redis-dev
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
