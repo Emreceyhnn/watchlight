@@ -33,13 +33,13 @@ export async function GET(req: NextRequest) {
       _count: { severity: true },
     });
 
-    const severityDistribution = {
+    const severityDistribution: Record<string, number> = {
       CRITICAL: 0,
       HIGH: 0,
       MEDIUM: 0,
       LOW: 0,
     };
-    severityGroups.forEach((g) => {
+    severityGroups.forEach((g: { severity: string; _count: { severity: number } }) => {
       severityDistribution[g.severity] = g._count.severity;
     });
 

@@ -10,9 +10,13 @@ export async function middleware(req: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
+  // Next.js dev modunda Fast Refresh/HMR runtime'ı eval() kullanır; CSP'yi
+  // sadece geliştirme ortamında gevşetiyoruz, production'da katı kalır.
+  const scriptSrc =
+    process.env.NODE_ENV === "production" ? "script-src 'self'" : "script-src 'self' 'unsafe-eval'";
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'"
+    `default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; ${scriptSrc}; frame-ancestors 'none'`
   );
   if (process.env.NODE_ENV === "production") {
     response.headers.set(

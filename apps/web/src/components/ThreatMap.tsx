@@ -47,12 +47,12 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
   });
 
   return (
-    <div className="h-80 w-full rounded-lg overflow-hidden border border-gray-800 relative z-10">
+    <div className="h-80 w-full relative z-10">
       <MapContainer
         center={[30, 10]}
         zoom={2}
         scrollWheelZoom={false}
-        className="h-full w-full bg-[#0B0F14]"
+        className="h-full w-full bg-soc-card"
       >
         {/* CartoDB DarkMatter Tiles (SOC karanlık tema için optimize) */}
         <TileLayer
@@ -63,10 +63,10 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
         {points.map((pt) => {
           const color =
             pt.severity === "CRITICAL"
-              ? "#EF4444"
+              ? "#F43F5E"
               : pt.severity === "HIGH"
               ? "#F59E0B"
-              : "#22D3EE";
+              : "#5B8CFF";
 
           return (
             <CircleMarker

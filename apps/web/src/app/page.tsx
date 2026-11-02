@@ -14,7 +14,7 @@ export default function SOCPortal() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0F14] text-gray-400">
+      <div className="flex min-h-screen items-center justify-center bg-soc-base text-gray-400 text-sm font-mono">
         Yükleniyor...
       </div>
     );
@@ -152,7 +152,7 @@ function SOCDashboard({
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F14] text-gray-100 font-sans selection:bg-cyan-500 selection:text-black">
+    <div className="flex min-h-screen bg-soc-base text-gray-100 font-sans selection:bg-soc-accent selection:text-white">
       {/* Yan Menü */}
       <Sidebar
         currentTab={currentTab}
@@ -180,26 +180,26 @@ function SOCDashboard({
           )}
 
           {currentTab === "stream" && (
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-              <h3 className="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
+            <div className="rounded-xl border border-soc-border bg-soc-panel p-5">
+              <h3 className="font-heading text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                <Radio className="h-4 w-4 text-soc-accent animate-pulse" strokeWidth={1.75} />
                 <span>Live Event Stream (Virtualized Queue)</span>
               </h3>
               <div className="font-mono text-xs space-y-2">
                 {liveEvents.length === 0 ? (
                   <div className="text-gray-500 py-6 text-center">
-                    📡 Listening on 'events:stream' Pub/Sub...
+                    Listening on 'events:stream' Pub/Sub…
                   </div>
                 ) : (
                   liveEvents.map((evt, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded bg-gray-950/70 border border-gray-800/80 flex items-center justify-between"
+                      className="p-2.5 rounded-lg bg-soc-card border border-soc-border-soft flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-cyan-400 font-bold">{evt.type}</span>
+                        <span className="text-soc-accent font-bold">{evt.type}</span>
                         <span className="text-gray-400">src: {evt.sourceIp}</span>
-                        {evt.username && <span className="text-amber-400">user: {evt.username}</span>}
+                        {evt.username && <span className="text-soc-high">user: {evt.username}</span>}
                       </div>
                       <span className="text-gray-500 text-[10px]">{evt.geoCountry || "TR"}</span>
                     </div>
@@ -210,9 +210,9 @@ function SOCDashboard({
           )}
 
           {currentTab === "incidents" && (
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-              <h3 className="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <FileText className="h-4 w-4 text-emerald-400" />
+            <div className="rounded-xl border border-soc-border bg-soc-panel p-5">
+              <h3 className="font-heading text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-soc-success" strokeWidth={1.75} />
                 <span>SOC Incident Management</span>
               </h3>
               <div className="space-y-3">
@@ -224,11 +224,11 @@ function SOCDashboard({
                   incidents.map((inc) => (
                     <div
                       key={inc.id}
-                      className="p-4 rounded-lg border border-gray-800 bg-gray-950/70 space-y-2"
+                      className="p-4 rounded-lg border border-soc-border-soft bg-soc-card space-y-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="font-semibold text-sm text-gray-100">{inc.title}</div>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-soc-high/15 text-soc-high border border-soc-high/30">
                           {inc.priority} • {inc.status}
                         </span>
                       </div>
