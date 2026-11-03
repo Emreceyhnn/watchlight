@@ -33,6 +33,8 @@ ENV HOSTNAME="0.0.0.0"
 COPY --from=builder --chown=nodejs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nodejs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nodejs:nodejs /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.pnpm/@prisma+client* /app/node_modules/.pnpm/@prisma+client/
+COPY --from=builder --chown=nodejs:nodejs /app/packages/db/prisma /app/packages/db/prisma
 
 USER nodejs
 EXPOSE 3000
