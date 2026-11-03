@@ -31,3 +31,18 @@ Thumbs.db
 # Coverage & testing
 coverage
 .nyc_output
+
+# Build artifacts
+*.tsbuildinfo
+*.d.ts.map
+
+# TLS Certificates (Prevent accidental secret leaks)
+certs/
+*.pem
+*.key
+*.crt
+
+
+.agents
+.claude
+reports

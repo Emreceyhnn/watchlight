@@ -14,7 +14,7 @@ interface IncidentModalProps {
 export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: IncidentModalProps) {
   const [title, setTitle] = useState(`[${alert?.severity || "HIGH"}] ${alert?.rule?.name || "Security Anomaly"} - ${alert?.sourceIp}`);
   const [summary, setSummary] = useState(
-    `Kaynak IP ${alert?.sourceIp} üzerinden ${alert?.eventCount} adet şüpheli olay tespit edildi. MITRE ATT&CK: ${alert?.rule?.attackTechnique || "T1110"}.`
+    `Detected ${alert?.eventCount || 1} anomalous security event(s) originating from source IP ${alert?.sourceIp}. Aligned with MITRE ATT&CK technique ${alert?.rule?.attackTechnique || "T1110"}.`
   );
   const [priority, setPriority] = useState<IncidentPriority>("P2");
   const [assignee, setAssignee] = useState("Emre Ceyhan (Lead Analyst)");

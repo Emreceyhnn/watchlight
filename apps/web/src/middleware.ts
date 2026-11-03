@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  // Traceable Request ID oluştur
+  const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+
   // Güvenlik Başlıkları (Security Headers)
   const response = NextResponse.next();
+  response.headers.set("X-Request-Id", requestId);
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -12,7 +16,7 @@ export async function middleware(req: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'"
+    "default-src 'self'; connect-src 'self'; img-src 'self' data: https://*.basemaps.cartocdn.com; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'"
   );
   if (process.env.NODE_ENV === "production") {
     response.headers.set(

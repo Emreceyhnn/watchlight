@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRawLog } from "../../../../apps/web/src/lib/normalizer";
+import { parseRawLog } from "../normalizer";
 
 describe("Log Normalizer & Parser Suite", () => {
   it("başarısız SSH login denemesini AUTH_FAILED olarak doğru parse etmeli", () => {

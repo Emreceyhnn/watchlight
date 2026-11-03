@@ -30,8 +30,9 @@ function generateMockBatch(size) {
       timestamp: new Date().toISOString(),
       type: types[i % types.length],
       sourceIp: ips[i % ips.length],
+      destIp: "10.0.0.1",
       username: users[i % users.length],
-      country: "TR",
+      geoCountry: "TR",
       payload: {
         benchIndex: i,
         status: 200,

@@ -28,17 +28,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const accessTokenRef = useRef<string | null>(null);
   accessTokenRef.current = accessToken;
 
-  const tryRefresh = useCallback(async () => {
-    try {
-      const res = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-      if (!res.ok) return false;
-      const data = await res.json();
-      setAccessToken(data.data.accessToken);
-      setUser(data.data.user);
-      return true;
-    } catch {
-      return false;
+  // In-flight refresh promise mutex to prevent thundering herd race condition
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
+
+  const tryRefresh = useCallback(async (): Promise<boolean> => {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
     }
+
+    refreshPromiseRef.current = (async () => {
+      try {
+        const res = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+        if (!res.ok) {
+          setAccessToken(null);
+          setUser(null);
+          return false;
+        }
+        const data = await res.json();
+        setAccessToken(data.data.accessToken);
+        setUser(data.data.user);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    return refreshPromiseRef.current;
   }, []);
 
   useEffect(() => {

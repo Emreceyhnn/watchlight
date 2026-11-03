@@ -18,7 +18,7 @@ export function LoginForm() {
     const result = await login(email, password);
     setIsSubmitting(false);
     if (!result.success) {
-      setError(result.message || "Giriş başarısız.");
+      setError(result.message || "Invalid email or password.");
     }
   };
 
@@ -33,24 +33,26 @@ export function LoginForm() {
           <span className="text-lg font-semibold">Watchlight SOC</span>
         </div>
 
-        <label className="mb-1 block text-sm text-gray-400">E-posta</label>
+        <label htmlFor="login-email" className="mb-1 block text-sm text-gray-300">Email Address</label>
         <input
+          id="login-email"
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mb-4 w-full rounded border border-gray-700 bg-[#0B0F14] px-3 py-2 text-sm outline-none focus:border-cyan-500"
+          className="mb-4 w-full rounded border border-gray-700 bg-[#0B0F14] px-3 py-2 text-sm text-gray-100 outline-none focus:border-cyan-500"
           autoComplete="username"
         />
 
-        <label className="mb-1 block text-sm text-gray-400">Parola</label>
+        <label htmlFor="login-password" className="mb-1 block text-sm text-gray-300">Password</label>
         <input
+          id="login-password"
           type="password"
           required
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mb-4 w-full rounded border border-gray-700 bg-[#0B0F14] px-3 py-2 text-sm outline-none focus:border-cyan-500"
+          className="mb-4 w-full rounded border border-gray-700 bg-[#0B0F14] px-3 py-2 text-sm text-gray-100 outline-none focus:border-cyan-500"
           autoComplete="current-password"
         />
 
@@ -61,7 +63,7 @@ export function LoginForm() {
           disabled={isSubmitting}
           className="w-full rounded bg-cyan-600 py-2 text-sm font-medium text-white transition hover:bg-cyan-500 disabled:opacity-50"
         >
-          {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+          {isSubmitting ? "Authenticating..." : "Sign In"}
         </button>
       </form>
     </div>

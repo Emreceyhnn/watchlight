@@ -47,7 +47,21 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
   });
 
   return (
-    <div className="h-80 w-full rounded-lg overflow-hidden border border-gray-800 relative z-10">
+    <div
+      className="h-80 w-full rounded-lg overflow-hidden border border-gray-800 relative z-10"
+      role="region"
+      aria-label="Threat Geolocation Map"
+    >
+      <div className="sr-only">
+        <h4>Geospatial Threat Summary</h4>
+        <ul>
+          {points.map((pt) => (
+            <li key={pt.id}>
+              {pt.severity} severity anomaly {pt.technique} from IP {pt.ip} ({pt.ruleName})
+            </li>
+          ))}
+        </ul>
+      </div>
       <MapContainer
         center={[30, 10]}
         zoom={2}

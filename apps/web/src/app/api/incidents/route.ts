@@ -55,6 +55,8 @@ export async function POST(req: NextRequest) {
 
     const { alertId, title, summary, assignee, priority } = parse.data;
 
+    const creatorUser = auth.user?.email || auth.user?.name || "SOC Analyst";
+
     // Alert'in durumunu ASSIGNED yap ve incident oluştur
     const [incident] = await prisma.$transaction([
       prisma.incident.create({
@@ -62,14 +64,14 @@ export async function POST(req: NextRequest) {
           alertId,
           title,
           summary,
-          assignee: assignee || "Lead Analyst",
+          assignee: assignee || creatorUser,
           priority,
           status: "OPEN",
           timeline: {
             create: {
-              actor: assignee || "Lead Analyst",
+              actor: creatorUser,
               action: "ASSIGN",
-              note: `Incident açıldı ve ${assignee || "Lead Analyst"} kullanıcısına atandı.`,
+              note: `Incident created by ${creatorUser} and assigned to ${assignee || creatorUser}.`,
             },
           },
         },

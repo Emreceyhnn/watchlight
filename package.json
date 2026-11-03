@@ -8,12 +8,14 @@
     "build": "dotenv -e .env -- turbo run build",
     "dev": "dotenv -e .env -- turbo run dev",
     "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
     "test": "vitest run",
     "bench": "dotenv -e .env -- node scripts/bench.mjs",
     "clean": "turbo run clean && rimraf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^5.1.0",
     "dotenv-cli": "^11.1.0",
     "prettier": "^3.5.0",
     "rimraf": "^6.0.1",

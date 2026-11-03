@@ -22,7 +22,10 @@ export async function GET(req: NextRequest) {
 
   const encoder = new TextEncoder();
   const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-  const sub = new Redis(redisUrl, { lazyConnect: true });
+  const sub = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: null });
+  sub.on("error", (err) => {
+    console.error("[SSE:RedisSub] Connection error:", err);
+  });
 
   const customStream = new ReadableStream({
     async start(controller) {

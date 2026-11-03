@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@watchlight/db";
-import { IngestBatchPayloadSchema, IngestEventPayloadSchema } from "@watchlight/shared";
+import { IngestBatchPayloadSchema, IngestEventPayloadSchema, lookupGeoCountry, parseRawLog } from "@watchlight/shared";
 import { validateApiKey, rateLimit } from "@/lib/rate-limit";
-import { lookupGeoCountry, parseRawLog } from "@/lib/normalizer";
 import { redis } from "@/lib/redis";
 
 const MAX_BODY_BYTES = 256 * 1024;
@@ -23,9 +22,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Rate limiting (API key başına)
+    // 2. Rate limiting (API key başına 1,000+ EPS desteği için 3,000 req/60s)
     const apiKey = req.headers.get("x-api-key")!;
-    const limitResult = await rateLimit(`ingest:${apiKey}`, 200, 60);
+    const limitResult = await rateLimit(`ingest:${apiKey}`, 3000, 60);
     if (!limitResult.success) {
       return NextResponse.json(
         {
@@ -44,7 +43,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    // Chunked Transfer DoS koruması: Body stream edilirken bayt sınırını zorla
+    let rawText = "";
+    if (req.body) {
+      const reader = req.body.getReader();
+      let totalBytes = 0;
+      const chunks: Uint8Array[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) {
+          totalBytes += value.length;
+          if (totalBytes > MAX_BODY_BYTES) {
+            return NextResponse.json(
+              { success: false, error: { code: "PAYLOAD_TOO_LARGE", message: "İstek gövdesi 256KB sınırını aştı." } },
+              { status: 413 }
+            );
+          }
+          chunks.push(value);
+        }
+      }
+      const combined = new Uint8Array(totalBytes);
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+      rawText = new TextDecoder().decode(combined);
+    }
+
+    const body = rawText ? JSON.parse(rawText) : {};
 
     // 3. Ham Log Desteği (raw log formatı gönderilmişse parse et)
     if (body.raw && body.sourceType) {
@@ -153,10 +182,14 @@ async function processEvents(rawEvents: any[]) {
     data: eventsToCreate,
   });
 
-  // Redis Pub/Sub üzerinden anlık yayınlama (Faz 8)
+  // Redis Pub/Sub üzerinden anlık yayınlama (Pipelining ile 1,000+ EPS optimizasyonu)
   try {
-    for (const evt of eventsToCreate) {
-      await redis.publish("events:stream", JSON.stringify(evt));
+    if (eventsToCreate.length > 0) {
+      const pipe = redis.pipeline();
+      for (const evt of eventsToCreate) {
+        pipe.publish("events:stream", JSON.stringify(evt));
+      }
+      await pipe.exec();
     }
   } catch (err) {
     console.warn("[Ingest API] Redis pub/sub push failed:", err);

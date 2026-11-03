@@ -78,12 +78,14 @@ export async function verifyRefreshToken(
     const jti = payload.jti as string | undefined;
 
     // Denylist kontrolü (logout veya iptal edilmiş refresh token)
+    // Güvenlik Kuralı: Fail-Closed olmalıdır. Redis'e erişilemezse token reddedilir.
     if (jti) {
       try {
         const isRevoked = await redis.get(`denylist:token:${jti}`);
         if (isRevoked) return null;
       } catch (err) {
-        console.warn("[Auth] Redis denylist check failed, falling back:", err);
+        console.error("[CRITICAL AUTH ERROR] Redis denylist check failed. Failing closed for safety:", err);
+        return null; // Fail-closed: Doğrulanamayan token yetkilendirilmez
       }
     }
 

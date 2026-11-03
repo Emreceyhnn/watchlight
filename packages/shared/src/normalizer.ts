@@ -1,4 +1,4 @@
-import { EventType, IngestEventPayload } from "@watchlight/shared";
+import { EventType, IngestEventPayload } from "./schemas";
 
 export interface RawLogEntry {
   raw: string;

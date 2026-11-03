@@ -57,20 +57,29 @@ export function DashboardView({
   alerts,
   onOpenIncidentModal,
 }: DashboardProps) {
-  // Zaman serisi simülasyon grafiği verisi (1 dakikalık pencereler)
-  const [chartData, setChartData] = useState([
-    { time: "21:00", eps: 420 },
-    { time: "21:10", eps: 680 },
-    { time: "21:20", eps: 510 },
-    { time: "21:30", eps: 890 },
-    { time: "21:40", eps: 1140 },
-    { time: "21:45", eps: stats?.summary?.eps || 950 },
-  ]);
+  // Dinamik istemci zaman serisi üretimi (son 6 nokta)
+  const [chartData, setChartData] = useState(() => {
+    const points = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 60 * 1000);
+      const timeStr = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      points.push({ time: timeStr, eps: Math.max(120, Math.floor((stats?.summary?.eps || 420) * (0.8 + Math.random() * 0.4))) });
+    }
+    return points;
+  });
+
+  const [peakEps, setPeakEps] = useState(() => Math.max(1250, stats?.summary?.eps || 420));
 
   useEffect(() => {
-    if (stats?.summary?.eps) {
+    if (stats?.summary?.eps !== undefined) {
+      const currentEps = stats.summary.eps;
+      setPeakEps((prev) => Math.max(prev, currentEps));
+
       setChartData((prev) => {
-        const next = [...prev.slice(1), { time: "Now", eps: stats.summary.eps }];
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        const next = [...prev.slice(1), { time: timeStr, eps: currentEps }];
         return next;
       });
     }
@@ -145,7 +154,7 @@ export function DashboardView({
               <p className="text-xs text-gray-500 font-mono">Real-time throughput via Sliding Window</p>
             </div>
             <span className="text-xs font-mono text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/20">
-              Peak: 1,250 EPS
+              Peak: {peakEps.toLocaleString()} EPS
             </span>
           </div>
           <div className="h-56">

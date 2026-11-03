@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { WATCHLIGHT_VERSION, EventTypeEnum } from "@watchlight/shared";
+import { WATCHLIGHT_VERSION, IngestEventPayload } from "@watchlight/shared";
 
 dotenv.config();
 
@@ -30,7 +30,7 @@ const COUNTRIES: Record<string, string> = {
   "10.0.0.15": "US",
 };
 
-async function sendBatch(events: any[]) {
+async function sendBatch(events: IngestEventPayload[]) {
   try {
     const res = await fetch(INGEST_URL, {
       method: "POST",
@@ -58,16 +58,16 @@ async function sendBatch(events: any[]) {
 async function simulateBruteForce() {
   const attackerIp = ATTACKER_IPS[0];
   console.log(`\n🚨 [Senaryo] SSH Brute Force Saldırısı başlatılıyor (IP: ${attackerIp})...`);
-  const batch = [];
+  const batch: IngestEventPayload[] = [];
   
   for (let i = 0; i < 8; i++) {
     batch.push({
       timestamp: new Date(Date.now() - (8 - i) * 1000).toISOString(),
-      type: "AUTH_FAILED" as const,
+      type: "AUTH_FAILED",
       sourceIp: attackerIp,
-      destinationIp: "192.168.1.100",
+      destIp: "192.168.1.100",
       username: "root",
-      country: COUNTRIES[attackerIp] || "RU",
+      geoCountry: COUNTRIES[attackerIp] || "RU",
       payload: { service: "sshd", port: 22, reason: "invalid credentials", attempt: i + 1 },
     });
   }
@@ -83,12 +83,12 @@ async function simulatePortScan() {
   const attackerIp = ATTACKER_IPS[1];
   console.log(`\n🔍 [Senaryo] Network Reconnaissance / Port Scan başlatılıyor (IP: ${attackerIp})...`);
   const targetPorts = [21, 22, 23, 25, 80, 443, 3389, 8080, 8443, 9200, 27017, 5432];
-  const batch = targetPorts.map((port, idx) => ({
+  const batch: IngestEventPayload[] = targetPorts.map((port, idx) => ({
     timestamp: new Date(Date.now() - (targetPorts.length - idx) * 500).toISOString(),
-    type: "NETWORK_SCAN" as const,
+    type: "NETWORK_SCAN",
     sourceIp: attackerIp,
-    destinationIp: "192.168.1.1",
-    country: COUNTRIES[attackerIp] || "CN",
+    destIp: "192.168.1.1",
+    geoCountry: COUNTRIES[attackerIp] || "CN",
     payload: { targetPort: port, flags: "SYN", tool: "nmap/7.94" },
   }));
 
@@ -102,14 +102,14 @@ async function simulatePortScan() {
 async function simulateDataExfiltration() {
   const attackerIp = ATTACKER_IPS[2];
   console.log(`\n💾 [Senaryo] Veri Sızıntısı / Exfiltration başlatılıyor (IP: ${attackerIp})...`);
-  const batch = [
+  const batch: IngestEventPayload[] = [
     {
       timestamp: new Date().toISOString(),
-      type: "DATA_TRANSFER" as const,
+      type: "DATA_TRANSFER",
       sourceIp: attackerIp,
-      destinationIp: "45.33.32.156",
+      destIp: "45.33.32.156",
       username: "analyst_emre",
-      country: COUNTRIES[attackerIp] || "IR",
+      geoCountry: COUNTRIES[attackerIp] || "IR",
       payload: {
         bytesTransferred: 52428800, // 50 MB
         protocol: "HTTPS",
@@ -134,9 +134,9 @@ async function simulateImpossibleTravel() {
   await sendBatch([
     {
       timestamp: new Date(Date.now() - 120000).toISOString(),
-      type: "AUTH_LOGIN" as const,
+      type: "AUTH_LOGIN",
       sourceIp: "88.241.12.8",
-      country: "TR",
+      geoCountry: "TR",
       username: user,
       payload: { city: "Istanbul", userAgent: "Mozilla/5.0 Mac" },
     },
@@ -146,9 +146,9 @@ async function simulateImpossibleTravel() {
   await sendBatch([
     {
       timestamp: new Date().toISOString(),
-      type: "AUTH_LOGIN" as const,
+      type: "AUTH_LOGIN",
       sourceIp: "45.154.255.89",
-      country: "CN",
+      geoCountry: "CN",
       username: user,
       payload: { city: "Hong Kong", userAgent: "Mozilla/5.0 Linux" },
     },
@@ -160,7 +160,7 @@ async function simulateImpossibleTravel() {
  * Rastgele Arka Plan SOC Trafiği Jeneratörü
  */
 async function generateBackgroundNoise() {
-  const eventTypes: (typeof EventTypeEnum._type)[] = [
+  const eventTypes: IngestEventPayload["type"][] = [
     "AUTH_LOGIN",
     "NETWORK_CONNECT",
     "API_CALL",
@@ -177,7 +177,7 @@ async function generateBackgroundNoise() {
       type: randomType,
       sourceIp: randomIp,
       username: randomUser,
-      country: COUNTRIES[randomIp] || "TR",
+      geoCountry: COUNTRIES[randomIp] || "TR",
       payload: {
         status: 200,
         latencyMs: Math.floor(Math.random() * 45) + 5,

@@ -3,9 +3,35 @@ import { prisma } from "@watchlight/db";
 import { LoginInputSchema } from "@watchlight/shared";
 import bcrypt from "bcryptjs";
 import { signAccessToken, signRefreshToken } from "@/lib/jwt";
+import { rateLimit } from "@/lib/rate-limit";
+
+// Sabit zamanlı karşılaştırma için sahte bcrypt hash'i (kullanıcı bulunamadığında timing attack'ı önler)
+const DUMMY_HASH = "$2a$10$wN17qGz8W22Gk8fD99uPzeP/aE0z58o7hPj75B0x3JqT2Fw7jVw1q";
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. IP bazlı Rate Limiting (5 dakikada en fazla 5 deneme)
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const rl = await rateLimit(`login:ip:${ip}`, 5, 300);
+
+    if (!rl.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "RATE_LIMITED",
+            message: `Çok fazla başarısız giriş denemesi. Lütfen ${rl.resetSec} saniye sonra tekrar deneyin.`,
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": rl.resetSec.toString(),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
     const parseResult = LoginInputSchema.safeParse(body);
 
@@ -29,21 +55,11 @@ export async function POST(req: NextRequest) {
       where: { email },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: "UNAUTHORIZED",
-            message: "Hatalı kimlik bilgileri.",
-          },
-        },
-        { status: 401 }
-      );
-    }
+    // 2. Timing attack koruması: Kullanıcı olmasa bile bcrypt.compare çalıştırılır
+    const hashToCompare = user ? user.password : DUMMY_HASH;
+    const isMatch = await bcrypt.compare(password, hashToCompare);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!user || !isMatch) {
       return NextResponse.json(
         {
           success: false,

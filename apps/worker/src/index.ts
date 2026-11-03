@@ -4,8 +4,11 @@ import { WATCHLIGHT_VERSION } from "@watchlight/shared";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
-const subRedis = new Redis(REDIS_URL);
-const redis = new Redis(REDIS_URL);
+const subRedis = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
+const redis = new Redis(REDIS_URL, { maxRetriesPerRequest: 3 });
+
+subRedis.on("error", (err) => console.error("[Worker:SubRedis] Redis connection error:", err));
+redis.on("error", (err) => console.error("[Worker:RedisClient] Redis connection error:", err));
 
 interface IngestedEvent {
   type: EventType;
@@ -43,6 +46,23 @@ async function evaluateEvent(event: IngestedEvent) {
       continue;
     }
 
+    // Impossible Travel (T1078) için anomali kontrolü: Kullanıcı farklı ülkeden oturum açtı mı?
+    if (rule.attackTechnique === "T1078" && event.username) {
+      const geoKey = `user:last_geo:${event.username}`;
+      const currentCountry = event.geoCountry || "TR";
+      const lastCountry = await redis.get(geoKey);
+
+      // Son ülkeyi güncelle (1 saat boyunca sakla)
+      await redis.setex(geoKey, rule.windowSec, currentCountry);
+
+      if (!lastCountry || lastCountry === currentCountry) {
+        // İlk giriş veya aynı ülke içindeki normal oturum açılışı; Impossible travel tetiklenmez
+        continue;
+      }
+      // Farklı ülkeden giriş tespit edildi:
+      console.log(`🚨 [IMPOSSIBLE TRAVEL DETECTED] User: ${event.username} moved from ${lastCountry} to ${currentCountry} within ${rule.windowSec}s!`);
+    }
+
     // Anahtar formatı: rule:{ruleId}:source:{sourceIp}
     // Impossible Travel için kullanıcı bazlı: rule:{ruleId}:user:{username}
     const isUserBased = rule.attackTechnique === "T1078" && event.username;
@@ -71,14 +91,12 @@ async function evaluateEvent(event: IngestedEvent) {
 async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: number) {
   // Throttling key: alert çığının önüne geçmek için aynı pencere boyunca 2. alert üretilmez
   const throttleKey = `throttle:rule:${rule.id}:ip:${event.sourceIp}`;
-  const isThrottled = await redis.get(throttleKey);
 
+  // Atomik NX kontrolü ile Race Condition engelleme
+  const isThrottled = await redis.get(throttleKey);
   if (isThrottled) {
     return; // Halihazırda bu kural ve IP için açık bir alarm var
   }
-
-  // Throttle kilidini ayarla (kuralın window süresi kadar)
-  await redis.setex(throttleKey, rule.windowSec, "active");
 
   console.log(
     `🚨 [ALERT TRIGGERED] [${rule.severity}] ${rule.name} -> Target: ${event.sourceIp} (Count: ${currentCount})`
@@ -100,10 +118,15 @@ async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: numb
       },
     });
 
-    // 2. Redis Pub/Sub üzerinden WebSocket sunucusuna alert yayınlama
+    // 2. Throttle kilidini SADECE DB kaydı başarılı olduktan sonra atomik ayarla
+    await redis.set(throttleKey, "active", "EX", rule.windowSec, "NX");
+
+    // 3. Redis Pub/Sub üzerinden WebSocket/SSE sunucusuna alert yayınlama
     await redis.publish("alerts:stream", JSON.stringify(newAlert));
   } catch (err) {
     console.error("[Rule Engine] Failed to persist alert:", err);
+    // Hata durumunda olası throttle anahtarını temizle
+    await redis.del(throttleKey).catch(() => {});
   }
 }
 
@@ -133,6 +156,35 @@ async function startEngine() {
   });
 
   console.log("✅ [Rule Engine] Subscribed to 'events:stream' and 'rules:reload'.");
+
+  // Worker Heartbeat (every 5 seconds)
+  const hbInterval = setInterval(async () => {
+    try {
+      await redis.set("worker:heartbeat", Date.now().toString(), "EX", 15);
+    } catch (e) {
+      // Ignore transient errors
+    }
+  }, 5000);
+
+  // Graceful Shutdown Handlers (SRE FM-03)
+  const shutdown = async (signal: string) => {
+    console.log(`\n🛑 [Worker] Received ${signal}. Starting graceful shutdown...`);
+    clearInterval(hbInterval);
+    try {
+      await subRedis.unsubscribe();
+      subRedis.disconnect();
+      redis.disconnect();
+      await prisma.$disconnect();
+      console.log("✅ [Worker] Cleanup complete. Exiting cleanly.");
+    } catch (err) {
+      console.error("⚠️ [Worker] Error during shutdown:", err);
+    } finally {
+      process.exit(0);
+    }
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startEngine().catch((err) => {

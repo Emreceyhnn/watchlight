@@ -36,8 +36,9 @@ export async function GET(req: NextRequest) {
     const events = await prisma.securityEvent.findMany({
       where,
       take: limit + 1,
+      skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
-      orderBy: { timestamp: "desc" },
+      orderBy: [{ timestamp: "desc" }, { id: "desc" }],
     });
 
     let nextCursor: string | null = null;

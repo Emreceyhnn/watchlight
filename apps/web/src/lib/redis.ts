@@ -14,6 +14,10 @@ export const redis =
     lazyConnect: true,
   });
 
+redis.on("error", (err) => {
+  console.error("[Web:Redis] Connection error:", err.message);
+});
+
 if (process.env.NODE_ENV !== "production") {
   global.redisClient = redis;
 }

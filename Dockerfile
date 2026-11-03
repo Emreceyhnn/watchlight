@@ -22,19 +22,21 @@ ENV NODE_ENV=production
 RUN pnpm --filter @watchlight/db db:generate
 RUN pnpm turbo run build
 
-# 4. Runner: Web (Next.js)
+# 4. Runner: Web (Next.js Standalone ~130MB)
 FROM node:22-alpine AS web
 RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -s /bin/sh -D nodejs
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
-COPY --from=builder --chown=nodejs:nodejs /app/apps/web ./apps/web
-COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+ENV HOSTNAME="0.0.0.0"
+
+COPY --from=builder --chown=nodejs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nodejs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nodejs:nodejs /app/apps/web/public ./apps/web/public
+
 USER nodejs
 EXPOSE 3000
-CMD ["node", "apps/web/node_modules/next/dist/bin/next", "start", "apps/web"]
+CMD ["node", "apps/web/server.js"]
 
 # 5. Runner: Worker
 FROM node:22-alpine AS worker

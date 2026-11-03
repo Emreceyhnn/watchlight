@@ -34,7 +34,7 @@ services:
     networks:
       - internal
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -43,6 +43,25 @@ services:
         limits:
           cpus: "0.5"
           memory: 256M
+
+  # Automated Database Migration & Seeding Init Service
+  db-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: watchlight-db-migrate
+    restart: "no"
+    command: ["sh", "-c", "pnpm --filter @watchlight/db db:push && pnpm --filter @watchlight/db db:seed"]
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-watchlight_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-watchlight_soc}?schema=public"
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+      SEED_ANALYST_PASSWORD: ${SEED_ANALYST_PASSWORD}
+    networks:
+      - internal
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   web:
     build:
@@ -68,6 +87,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 15s
@@ -98,6 +119,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -110,6 +133,9 @@ services:
       dockerfile: Dockerfile
       target: simulator
     container_name: watchlight-simulator
+    profiles:
+      - demo
+      - simulation
     restart: on-failure
     environment:
       INGEST_URL: "http://web:3000/api/ingest"
@@ -117,7 +143,8 @@ services:
     networks:
       - internal
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -137,12 +164,18 @@ services:
     networks:
       - edge
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
 
 networks:
   internal:
