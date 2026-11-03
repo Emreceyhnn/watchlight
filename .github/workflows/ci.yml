@@ -45,15 +45,10 @@ jobs:
         run: pnpm run build
 
   build-and-push-images:
-    name: Build & Push Docker Images to GHCR
+    name: Build & Push Docker Images to Docker Hub
     needs: [test-and-lint]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      image_tag: ${{ steps.meta.outputs.tag }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -61,20 +56,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry (GHCR)
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Determine Image Tags
-        id: meta
-        run: |
-          TAG="${{ github.sha }}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          echo "repo=$REPO_LOWER" >> $GITHUB_OUTPUT
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and Push Web Container
         uses: docker/build-push-action@v5
@@ -83,8 +69,8 @@ jobs:
           target: web
           push: true
           tags: |
-            ghcr.io/${{ steps.meta.outputs.repo }}/web:latest
-            ghcr.io/${{ steps.meta.outputs.repo }}/web:${{ steps.meta.outputs.tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/watchlight-web:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/watchlight-web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -95,20 +81,8 @@ jobs:
           target: worker
           push: true
           tags: |
-            ghcr.io/${{ steps.meta.outputs.repo }}/worker:latest
-            ghcr.io/${{ steps.meta.outputs.repo }}/worker:${{ steps.meta.outputs.tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and Push Migration Container
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          target: builder
-          push: true
-          tags: |
-            ghcr.io/${{ steps.meta.outputs.repo }}/db-migrate:latest
-            ghcr.io/${{ steps.meta.outputs.repo }}/db-migrate:${{ steps.meta.outputs.tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/watchlight-worker:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/watchlight-worker:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -129,34 +103,16 @@ jobs:
             set -e
             echo "🚀 Starting automated deployment for Watchlight..."
             
-            APP_DIR="${{ secrets.SERVER_APP_DIR || '/opt/watchlight' }}"
-            mkdir -p "$APP_DIR"
+            APP_DIR="${{ secrets.SERVER_APP_DIR || '/home/watchlight' }}"
             cd "$APP_DIR"
             
-            # Gerekirse git reposunu clone/pull et
-            if [ -d ".git" ]; then
-              echo "Pulling latest code changes..."
-              git fetch origin main
-              git reset --hard origin/main
-            else
-              echo "Cloning repository..."
-              git clone https://github.com/${{ github.repository }}.git .
-            fi
-
-            # GHCR Login (Private image çekebilmek için)
-            echo "${{ secrets.DEPLOY_GHCR_TOKEN || secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Gerekirse self-signed sertifika oluştur
-            if [ ! -f "certs/fullchain.pem" ]; then
-              sh scripts/generate-certs.sh || true
-            fi
-
-            # En güncel Docker imajlarını çek ve servisleri ayağa kaldır
-            echo "Pulling latest containers and restarting stack..."
-            docker compose pull || true
-            docker compose up -d --build --remove-orphans
-
-            # Kullanılmayan eski Docker imajlarını temizle
-            docker image prune -af --filter "until=72h"
-
-            echo "✅ Deployment completed successfully!"
+            echo "Pulling latest Docker Hub images..."
+            docker compose pull
+            
+            echo "Starting containers with resource constraints..."
+            docker compose up -d --remove-orphans
+            
+            echo "Pruning dangling docker images..."
+            docker image prune -f
+            
+            echo "✅ Watchlight deployed successfully!"
