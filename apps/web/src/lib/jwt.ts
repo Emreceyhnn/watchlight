@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
-import { UserRole } from "@watchlight/shared";
+import { UserRole, createLogger } from "@watchlight/shared";
 import { redis } from "./redis";
+
+const log = createLogger("web:jwt");
 
 function requireSecret(name: string): string {
   const value = process.env[name];
@@ -84,7 +86,7 @@ export async function verifyRefreshToken(
         const isRevoked = await redis.get(`denylist:token:${jti}`);
         if (isRevoked) return null;
       } catch (err) {
-        console.error("[CRITICAL AUTH ERROR] Redis denylist check failed. Failing closed for safety:", err);
+        log.error({ err }, "Redis denylist check failed — failing closed for safety");
         return null; // Fail-closed: Doğrulanamayan token yetkilendirilmez
       }
     }
@@ -105,6 +107,6 @@ export async function revokeToken(jti: string, ttlSeconds = 7 * 24 * 3600): Prom
   try {
     await redis.setex(`denylist:token:${jti}`, ttlSeconds, "revoked");
   } catch (err) {
-    console.error("[Auth] Token revocation failed in Redis:", err);
+    log.error({ err }, "Token revocation failed in Redis");
   }
 }

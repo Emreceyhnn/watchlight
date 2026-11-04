@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Sliders, Plus, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 
 interface RulesViewProps {
@@ -12,7 +12,7 @@ export function RulesView({ authFetch }: RulesViewProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRules = async () => {
+  const fetchRules = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -28,11 +28,11 @@ export function RulesView({ authFetch }: RulesViewProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authFetch]);
 
   useEffect(() => {
     fetchRules();
-  }, []);
+  }, [fetchRules]);
 
   return (
     <div className="rounded-lg border border-soc-border bg-soc-card p-5 space-y-4">

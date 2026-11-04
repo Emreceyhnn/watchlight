@@ -14,9 +14,13 @@ export async function middleware(req: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
+  const scriptSrc =
+    process.env.NODE_ENV === "production"
+      ? "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com";
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; connect-src 'self' wss: ws: https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; frame-ancestors 'none'"
+    `default-src 'self'; connect-src 'self' wss: ws: https:; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; ${scriptSrc}; frame-ancestors 'none'`
   );
   if (process.env.NODE_ENV === "production") {
     response.headers.set(

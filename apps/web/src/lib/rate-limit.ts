@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
+import { createLogger } from "@watchlight/shared";
 import { redis } from "./redis";
+
+const log = createLogger("web:rate-limit");
 
 export interface RateLimitResult {
   success: boolean;
@@ -47,8 +50,9 @@ export async function rateLimit(
       resetSec: ttl > 0 ? ttl : windowSec,
     };
   } catch (error) {
-    // Redis erişilemezse uygulamanın çökmesini engelle (graceful degradation)
-    console.warn("[RateLimit] Redis error, allowing request:", error);
+    // Redis erişilemezse uygulamanın çökmesini engelle (graceful degradation),
+    // ama bu bir güvenlik kontrolünün devre dışı kaldığı anlamına gelir — error seviyesinde logla.
+    log.error({ err: error }, "Redis unavailable — rate limiting is DISABLED (fail-open)");
     return {
       success: true,
       limit,

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@watchlight/db";
-import { IngestBatchPayloadSchema, IngestEventPayloadSchema, lookupGeoCountry, parseRawLog } from "@watchlight/shared";
+import { IngestBatchPayloadSchema, IngestEventPayloadSchema, lookupGeoCountry, parseRawLog, createLogger } from "@watchlight/shared";
 import { validateApiKey, rateLimit } from "@/lib/rate-limit";
 import { redis } from "@/lib/redis";
 
+const log = createLogger("web:ingest");
 const MAX_BODY_BYTES = 256 * 1024;
 
 export async function POST(req: NextRequest) {
@@ -145,7 +146,7 @@ export async function POST(req: NextRequest) {
 
     return await processEvents([singleResult.data]);
   } catch (error) {
-    console.error("[Ingest API] Ingestion error:", error);
+    log.error({ err: error }, "Ingestion error");
     return NextResponse.json(
       {
         success: false,
@@ -192,7 +193,7 @@ async function processEvents(rawEvents: any[]) {
       await pipe.exec();
     }
   } catch (err) {
-    console.warn("[Ingest API] Redis pub/sub push failed:", err);
+    log.warn({ err }, "Redis pub/sub push failed");
   }
 
   return NextResponse.json({

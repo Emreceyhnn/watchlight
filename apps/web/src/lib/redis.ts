@@ -1,5 +1,7 @@
 import Redis from "ioredis";
+import { createLogger } from "@watchlight/shared";
 
+const log = createLogger("web:redis");
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
 declare global {
@@ -15,7 +17,7 @@ export const redis =
   });
 
 redis.on("error", (err) => {
-  console.error("[Web:Redis] Connection error:", err.message);
+  log.error({ err: err.message }, "Connection error");
 });
 
 if (process.env.NODE_ENV !== "production") {

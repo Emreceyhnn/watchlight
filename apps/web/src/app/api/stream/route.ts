@@ -1,21 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import Redis from "ioredis";
-import { verifyAccessToken } from "@/lib/jwt";
+import { redis as sharedRedis } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Server-Sent Events (SSE) Canlı Yayın Gateway'i
  * Tarayıcı EventSource ile tek yönlü ve son derece stabil canlı stream sağlar.
- * EventSource custom header gönderemediğinden erişim token'ı query param olarak alınır.
+ * EventSource custom header gönderemediğinden, uzun ömürlü access JWT yerine
+ * /api/stream/ticket üzerinden alınan 30 saniyelik tek kullanımlık bir ticket
+ * query param olarak taşınır. Ticket burada tüketilir (GETDEL) ve bir daha
+ * kullanılamaz; URL/proxy log/history'de görünse bile değersizdir.
  */
 export async function GET(req: NextRequest) {
-  const token = req.nextUrl.searchParams.get("token");
-  const user = token ? await verifyAccessToken(token) : null;
+  const ticket = req.nextUrl.searchParams.get("ticket");
 
-  if (!user) {
+  if (!ticket) {
     return NextResponse.json(
-      { success: false, error: { code: "UNAUTHORIZED", message: "Geçerli bir erişim token'ı gereklidir." } },
+      { success: false, error: { code: "UNAUTHORIZED", message: "Geçerli bir bağlantı ticket'ı gereklidir." } },
+      { status: 401 }
+    );
+  }
+
+  let ticketPayload: string | null;
+  try {
+    ticketPayload = await sharedRedis.getdel(`stream:ticket:${ticket}`);
+  } catch (err) {
+    console.error("[SSE] Ticket lookup failed:", err);
+    return NextResponse.json(
+      { success: false, error: { code: "SERVER_ERROR", message: "Bağlantı doğrulanamadı." } },
+      { status: 500 }
+    );
+  }
+
+  if (!ticketPayload) {
+    return NextResponse.json(
+      { success: false, error: { code: "UNAUTHORIZED", message: "Ticket geçersiz veya süresi dolmuş." } },
       { status: 401 }
     );
   }

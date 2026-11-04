@@ -9,6 +9,15 @@ export async function POST(req: NextRequest) {
   const auth = await authenticateRequest(req, ["ADMIN", "ANALYST"]);
   if (auth.response) return auth.response;
 
+  const ingestApiKey = process.env.INGEST_API_KEY;
+  if (!ingestApiKey) {
+    console.error("[Simulate API] INGEST_API_KEY is not configured.");
+    return NextResponse.json(
+      { success: false, error: { code: "SERVER_ERROR", message: "Simülasyon servisi yapılandırılmamış." } },
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await req.json();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -17,7 +26,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.INGEST_API_KEY!,
+        "x-api-key": ingestApiKey,
       },
       body: JSON.stringify(body),
     });

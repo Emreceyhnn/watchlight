@@ -142,7 +142,7 @@ export function LoginForm() {
               <div className="flex items-start gap-2 text-gray-500 font-mono text-[11px] leading-relaxed">
                 <ShieldCheck size={14} className="text-gray-400 shrink-0 mt-0.5" />
                 <span>
-                  Protected by mTLS &amp; hardware key verification. Unauthorized access attempts are
+                  Protected by JWT-based session authentication. Unauthorized access attempts are
                   actively logged and referred to SecOps Incident Response.
                 </span>
               </div>

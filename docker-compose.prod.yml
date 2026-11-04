@@ -1,16 +1,16 @@
 services:
   db-init:
-    image: emrecyhn/watchlight-worker:latest
+    image: emrecyhn/watchlight-worker:${IMAGE_TAG:?set IMAGE_TAG, e.g. 312bf05-202611041702}
     container_name: watchlight-db-init
     restart: "no"
-    command: ["sh", "-c", "node -e 'const { execSync } = require(\"child_process\"); try { execSync(\"npx prisma db push --schema packages/db/prisma/schema.prisma --accept-data-loss\", { stdio: \"inherit\" }); execSync(\"npx tsx packages/db/prisma/seed.ts\", { stdio: \"inherit\" }); } catch(e) { console.error(e); }'"]
+    command: ["sh", "./scripts/db-init.sh"]
     env_file:
       - .env
     networks:
       - gateway-network
 
   web:
-    image: emrecyhn/watchlight-web:latest
+    image: emrecyhn/watchlight-web:${IMAGE_TAG:?set IMAGE_TAG, e.g. 312bf05-202611041702}
     container_name: watchlight-web
     restart: always
     env_file:
@@ -30,7 +30,7 @@ services:
           memory: 64M
 
   worker:
-    image: emrecyhn/watchlight-worker:latest
+    image: emrecyhn/watchlight-worker:${IMAGE_TAG:?set IMAGE_TAG, e.g. 312bf05-202611041702}
     container_name: watchlight-worker
     restart: always
     env_file:

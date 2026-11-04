@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@watchlight/db";
-import { LoginInputSchema } from "@watchlight/shared";
+import { LoginInputSchema, createLogger } from "@watchlight/shared";
 import bcrypt from "bcryptjs";
 import { signAccessToken, signRefreshToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rate-limit";
+
+const log = createLogger("web:auth");
 
 // Sabit zamanlı karşılaştırma için sahte bcrypt hash'i (kullanıcı bulunamadığında timing attack'ı önler)
 const DUMMY_HASH = "$2a$10$wN17qGz8W22Gk8fD99uPzeP/aE0z58o7hPj75B0x3JqT2Fw7jVw1q";
@@ -101,7 +103,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("[Auth API] Login error:", error);
+    log.error({ err: error }, "Login error");
     return NextResponse.json(
       {
         success: false,

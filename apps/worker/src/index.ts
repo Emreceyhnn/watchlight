@@ -1,14 +1,20 @@
 import Redis from "ioredis";
 import { prisma, Rule, Alert, Severity, EventType } from "@watchlight/db";
-import { WATCHLIGHT_VERSION } from "@watchlight/shared";
+import { WATCHLIGHT_VERSION, requireEnv, createLogger } from "@watchlight/shared";
+
+if (process.env.NODE_ENV === "production") {
+  requireEnv(["REDIS_URL", "DATABASE_URL"]);
+}
+
+const log = createLogger("worker");
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 const subRedis = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
 const redis = new Redis(REDIS_URL, { maxRetriesPerRequest: 3 });
 
-subRedis.on("error", (err) => console.error("[Worker:SubRedis] Redis connection error:", err));
-redis.on("error", (err) => console.error("[Worker:RedisClient] Redis connection error:", err));
+subRedis.on("error", (err) => log.error({ err }, "SubRedis connection error"));
+redis.on("error", (err) => log.error({ err }, "RedisClient connection error"));
 
 interface IngestedEvent {
   type: EventType;
@@ -31,9 +37,9 @@ async function loadRules() {
     cachedRules = await prisma.rule.findMany({
       where: { enabled: true },
     });
-    console.log(`[Rule Engine] Loaded ${cachedRules.length} active detection rules.`);
+    log.info({ count: cachedRules.length }, "Loaded active detection rules");
   } catch (err) {
-    console.error("[Rule Engine] Failed to load rules:", err);
+    log.error({ err }, "Failed to load rules");
   }
 }
 
@@ -60,7 +66,10 @@ async function evaluateEvent(event: IngestedEvent) {
         continue;
       }
       // Farklı ülkeden giriş tespit edildi:
-      console.log(`🚨 [IMPOSSIBLE TRAVEL DETECTED] User: ${event.username} moved from ${lastCountry} to ${currentCountry} within ${rule.windowSec}s!`);
+      log.warn(
+        { username: event.username, from: lastCountry, to: currentCountry, windowSec: rule.windowSec },
+        "Impossible travel detected"
+      );
     }
 
     // Anahtar formatı: rule:{ruleId}:source:{sourceIp}
@@ -80,7 +89,7 @@ async function evaluateEvent(event: IngestedEvent) {
         await triggerAlert(rule, event, count);
       }
     } catch (err) {
-      console.error(`[Rule Engine] Evaluation error on rule ${rule.name}:`, err);
+      log.error({ err, rule: rule.name }, "Rule evaluation error");
     }
   }
 }
@@ -98,8 +107,9 @@ async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: numb
     return; // Halihazırda bu kural ve IP için açık bir alarm var
   }
 
-  console.log(
-    `🚨 [ALERT TRIGGERED] [${rule.severity}] ${rule.name} -> Target: ${event.sourceIp} (Count: ${currentCount})`
+  log.warn(
+    { severity: rule.severity, rule: rule.name, sourceIp: event.sourceIp, count: currentCount },
+    "Alert triggered"
   );
 
   try {
@@ -124,14 +134,14 @@ async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: numb
     // 3. Redis Pub/Sub üzerinden WebSocket/SSE sunucusuna alert yayınlama
     await redis.publish("alerts:stream", JSON.stringify(newAlert));
   } catch (err) {
-    console.error("[Rule Engine] Failed to persist alert:", err);
+    log.error({ err }, "Failed to persist alert");
     // Hata durumunda olası throttle anahtarını temizle
     await redis.del(throttleKey).catch(() => {});
   }
 }
 
 async function startEngine() {
-  console.log(`🛡️ [Watchlight Worker] Starting Rule Engine v${WATCHLIGHT_VERSION}...`);
+  log.info({ version: WATCHLIGHT_VERSION }, "Starting Rule Engine");
 
   await loadRules();
 
@@ -140,7 +150,7 @@ async function startEngine() {
 
   subRedis.on("message", async (channel, message) => {
     if (channel === "rules:reload") {
-      console.log("[Rule Engine] Rules reload signal received.");
+      log.info("Rules reload signal received");
       await loadRules();
       return;
     }
@@ -150,12 +160,12 @@ async function startEngine() {
         const event: IngestedEvent = JSON.parse(message);
         await evaluateEvent(event);
       } catch (err) {
-        console.error("[Rule Engine] Invalid event JSON on stream:", err);
+        log.error({ err }, "Invalid event JSON on stream");
       }
     }
   });
 
-  console.log("✅ [Rule Engine] Subscribed to 'events:stream' and 'rules:reload'.");
+  log.info("Subscribed to 'events:stream' and 'rules:reload'");
 
   // Worker Heartbeat (every 5 seconds)
   const hbInterval = setInterval(async () => {
@@ -168,16 +178,16 @@ async function startEngine() {
 
   // Graceful Shutdown Handlers (SRE FM-03)
   const shutdown = async (signal: string) => {
-    console.log(`\n🛑 [Worker] Received ${signal}. Starting graceful shutdown...`);
+    log.info({ signal }, "Received shutdown signal, starting graceful shutdown");
     clearInterval(hbInterval);
     try {
       await subRedis.unsubscribe();
       subRedis.disconnect();
       redis.disconnect();
       await prisma.$disconnect();
-      console.log("✅ [Worker] Cleanup complete. Exiting cleanly.");
+      log.info("Cleanup complete, exiting cleanly");
     } catch (err) {
-      console.error("⚠️ [Worker] Error during shutdown:", err);
+      log.error({ err }, "Error during shutdown");
     } finally {
       process.exit(0);
     }
@@ -188,6 +198,6 @@ async function startEngine() {
 }
 
 startEngine().catch((err) => {
-  console.error("❌ Fatal error in worker:", err);
+  log.fatal({ err }, "Fatal error in worker");
   process.exit(1);
 });

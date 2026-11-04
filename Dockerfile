@@ -48,7 +48,10 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
 COPY --from=builder --chown=nodejs:nodejs /app/apps/worker ./apps/worker
+COPY --from=builder --chown=nodejs:nodejs /app/scripts/db-init.sh ./scripts/db-init.sh
 USER nodejs
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["node", "apps/worker/dist/healthcheck.js"]
 CMD ["node", "apps/worker/dist/index.js"]
 
 # 6. Runner: Simulator

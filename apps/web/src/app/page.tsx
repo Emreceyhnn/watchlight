@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import { DashboardView } from "@/components/DashboardView";
@@ -47,7 +47,7 @@ function SOCDashboard({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Verileri çek
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [resStats, resAlerts, resIncidents] = await Promise.all([
         authFetch("/api/stats/summary"),
@@ -70,37 +70,50 @@ function SOCDashboard({
     } catch (err) {
       console.error("Failed to fetch SOC data:", err);
     }
-  };
+  }, [authFetch]);
 
   useEffect(() => {
     fetchData();
 
     // Server-Sent Events (SSE) Canlı Bağlantısı (Faz 13)
-    const eventSource = new EventSource(`/api/stream?token=${encodeURIComponent(accessToken)}`);
+    // EventSource custom header taşıyamadığından, uzun ömürlü access token yerine
+    // kısa ömürlü tek kullanımlık bir ticket alınıp URL'de ona yer verilir.
+    let eventSource: EventSource | null = null;
+    let cancelled = false;
 
-    eventSource.addEventListener("event", (e: any) => {
-      try {
-        const parsed = JSON.parse(e.data);
-        setLiveEvents((prev) => [parsed, ...prev.slice(0, 49)]);
-      } catch (err) {
-        console.error("SSE parse error:", err);
-      }
-    });
+    authFetch("/api/stream/ticket", { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !data?.data?.ticket) return;
 
-    eventSource.addEventListener("alert", (e: any) => {
-      try {
-        const parsed = JSON.parse(e.data);
-        setAlerts((prev) => [parsed, ...prev]);
-        fetchData(); // İstatistikleri güncelle
-      } catch (err) {
-        console.error("SSE alert parse error:", err);
-      }
-    });
+        eventSource = new EventSource(`/api/stream?ticket=${encodeURIComponent(data.data.ticket)}`);
+
+        eventSource.addEventListener("event", (e: any) => {
+          try {
+            const parsed = JSON.parse(e.data);
+            setLiveEvents((prev) => [parsed, ...prev.slice(0, 49)]);
+          } catch (err) {
+            console.error("SSE parse error:", err);
+          }
+        });
+
+        eventSource.addEventListener("alert", (e: any) => {
+          try {
+            const parsed = JSON.parse(e.data);
+            setAlerts((prev) => [parsed, ...prev]);
+            fetchData();
+          } catch (err) {
+            console.error("SSE alert parse error:", err);
+          }
+        });
+      })
+      .catch((err) => console.error("Failed to obtain stream ticket:", err));
 
     return () => {
-      eventSource.close();
+      cancelled = true;
+      eventSource?.close();
     };
-  }, [accessToken]);
+  }, [accessToken, authFetch, fetchData]);
 
   // Simülatör tetikleme fonksiyonu
   const handleTriggerSimulation = async (scenario: string) => {
