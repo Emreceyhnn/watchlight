@@ -35,6 +35,9 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter @watchlight/db db:generate
 
+      - name: Build Shared Package
+        run: pnpm --filter @watchlight/shared build
+
       - name: Run ESLint
         run: pnpm turbo run lint
 
@@ -102,17 +105,28 @@ jobs:
           script: |
             set -e
             echo "🚀 Starting automated deployment for Watchlight..."
-            
+
             APP_DIR="${{ secrets.SERVER_APP_DIR || '/home/watchlight' }}"
             cd "$APP_DIR"
-            
-            echo "Pulling latest Docker Hub images..."
+
+            echo "Pinning IMAGE_TAG to this commit's SHA..."
+            IMAGE_TAG="${{ github.sha }}"
+            if grep -q '^IMAGE_TAG=' .env; then
+              sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${IMAGE_TAG}|" .env
+            else
+              echo "IMAGE_TAG=${IMAGE_TAG}" >> .env
+            fi
+
+            echo "Pulling images for tag ${IMAGE_TAG}..."
             docker compose pull
-            
+
+            echo "Running database migrations (safe, non-destructive)..."
+            docker compose run --rm db-init
+
             echo "Starting containers with resource constraints..."
-            docker compose up -d --remove-orphans
-            
+            docker compose up -d --remove-orphans web worker
+
             echo "Pruning dangling docker images..."
             docker image prune -f
-            
+
             echo "✅ Watchlight deployed successfully!"
