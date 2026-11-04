@@ -157,7 +157,7 @@ export function LoginForm() {
       <footer className="relative z-10 w-full px-6 py-4 flex flex-col md:flex-row justify-between items-center border-t border-white/[0.06] bg-soc-base/80 backdrop-blur-sm font-mono text-xs text-gray-500">
         <div className="flex items-center gap-2 mb-2 md:mb-0">
           <span className="w-1.5 h-1.5 rounded-full bg-soc-success" />
-          <span>© 2025 Watchlight SOC. Enterprise Mini-SIEM Platform. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Watchlight SOC. Enterprise Mini-SIEM Platform. All rights reserved.</span>
         </div>
         <div className="flex items-center gap-4 text-gray-400">
           <span>TLS 1.3 &middot; ChaCha20</span>
