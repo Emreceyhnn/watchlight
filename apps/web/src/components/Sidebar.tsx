@@ -43,13 +43,13 @@ export function Sidebar({
     { id: "stream", label: "Live Events", icon: Radio },
     {
       id: "alerts",
-      label: "Alerts",
+      label: "Live Alerts",
       icon: AlertTriangle,
       badge: activeAlertCount > 0 ? activeAlertCount : null,
     },
+    { id: "rules", label: "Detection Rules", icon: Sliders },
     { id: "threatmap", label: "Threat Map", icon: Globe },
     { id: "incidents", label: "Incidents", icon: FileText },
-    { id: "rules", label: "SIEM Rules", icon: Sliders },
   ];
 
   const handleTabSelect = (tab: string) => {
@@ -68,24 +68,24 @@ export function Sidebar({
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 border-r border-gray-800 bg-[#070A0E] flex flex-col justify-between shrink-0 h-screen transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-60 border-r border-soc-border bg-soc-base flex flex-col justify-between shrink-0 h-screen p-3 select-none transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${
           isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
-        <div>
+        <div className="space-y-4">
           {/* Logo & Mobile Close */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-gray-800/80">
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/10 border border-cyan-500/30">
-                <Shield className="h-5 w-5 text-cyan-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-soc-accent/10 border border-soc-accent/30 text-soc-accent shadow-[0_0_12px_rgba(91,140,255,0.25)]">
+                <Shield className="h-[19px] w-[19px]" />
               </div>
-              <div>
-                <div className="font-bold text-white tracking-wider flex items-center gap-1.5 text-sm">
-                  WATCH<span className="text-cyan-400">LIGHT</span>
-                </div>
-                <div className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">
-                  Mini-SIEM / SOC
-                </div>
+              <div className="flex flex-col leading-none">
+                <span className="font-heading font-bold text-base tracking-wider uppercase text-white">
+                  Watchlight
+                </span>
+                <span className="text-[10px] text-gray-400 font-mono tracking-tight mt-1">
+                  Mini-SIEM Analyst Ops
+                </span>
               </div>
             </div>
 
@@ -100,7 +100,7 @@ export function Sidebar({
           </div>
 
           {/* Nav Links */}
-          <nav className="p-4 space-y-1">
+          <nav className="space-y-0.5 font-heading text-sm tracking-tight pt-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
@@ -108,21 +108,23 @@ export function Sidebar({
                 <button
                   key={item.id}
                   onClick={() => handleTabSelect(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-r-lg text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-soc-accent ${
                     isActive
-                      ? "bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.1)]"
-                      : "text-gray-300 hover:text-gray-100 hover:bg-gray-900/60 border border-transparent"
+                      ? "bg-soc-panel text-soc-accent border-l-2 border-soc-accent font-medium"
+                      : "text-gray-400 hover:text-gray-100 hover:bg-soc-panel/60 rounded-lg"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`h-4 w-4 ${isActive ? "text-cyan-400" : "text-gray-400"}`} />
+                    <Icon className={`h-4 w-4 ${isActive ? "text-soc-accent" : "text-gray-400"}`} />
                     <span>{item.label}</span>
                   </div>
-                  {item.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
+                  {item.badge ? (
+                    <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-soc-critical/15 text-soc-critical border border-soc-critical/40 leading-none">
                       {item.badge}
                     </span>
-                  )}
+                  ) : isActive ? (
+                    <span className="h-1.5 w-1.5 rounded-full bg-soc-accent" />
+                  ) : null}
                 </button>
               );
             })}
@@ -130,29 +132,37 @@ export function Sidebar({
         </div>
 
         {/* Footer SOC Status */}
-        <div className="p-4 border-t border-gray-800/80 bg-gray-950/40">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] text-gray-400">Worker Status</span>
+        <div className="pt-3 border-t border-soc-border/80">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-[11px] text-gray-400 font-mono">Worker Status</span>
             {workerOnline === true ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-soc-success">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-soc-success opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-soc-success" />
+                </span>
                 ONLINE
               </span>
             ) : workerOnline === false ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-red-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-soc-critical">
+                <span className="h-1.5 w-1.5 rounded-full bg-soc-critical" />
                 OFFLINE
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-amber-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-soc-high">
+                <span className="h-1.5 w-1.5 rounded-full bg-soc-high animate-pulse" />
                 CHECKING
               </span>
             )}
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-400">Active Pipeline</span>
-            <span className="text-[11px] font-mono text-cyan-400">Redis Pub/Sub</span>
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-soc-panel/40 border border-soc-border/50">
+            <div className="h-8 w-8 rounded bg-gradient-to-tr from-soc-accent to-indigo-500 flex items-center justify-center text-xs font-heading font-semibold text-white shrink-0">
+              SO
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-gray-100 truncate">SOC Analyst</div>
+              <div className="text-[10px] text-gray-400 font-mono truncate">Redis Pub/Sub</div>
+            </div>
           </div>
         </div>
       </aside>

@@ -38,6 +38,7 @@ const config: Config = {
         heading: ["var(--font-heading)", "Space Grotesk", "sans-serif"],
         sans: ["var(--font-body)", "Inter", "sans-serif"],
         mono: ["var(--font-mono)", "Geist Mono", "ui-monospace", "monospace"],
+        label: ["var(--font-mono)", "Geist Mono", "ui-monospace", "monospace"],
       },
       boxShadow: {
         glow: "0 0 20px rgba(91, 140, 255, 0.15)",

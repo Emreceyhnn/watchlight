@@ -3,12 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B0F14;
-  --foreground: #F3F4F6;
+  --background: #0A0D12;
+  --foreground: #E5E9EF;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Technical grid backdrop used on auth / empty-state canvases */
+.soc-grid-bg {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(42, 51, 64, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(42, 51, 64, 0.22) 1px, transparent 1px);
+}
+
+.soc-radial-glow {
+  background: radial-gradient(circle 580px at 50% 50%, rgba(91, 140, 255, 0.12), rgba(10, 13, 18, 0) 80%);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0d12;
+}
+::-webkit-scrollbar-thumb {
+  background: #262e3d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4759;
 }

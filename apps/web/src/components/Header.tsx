@@ -19,63 +19,65 @@ export function Header({ eps, onTriggerSimulation, isSimulating, onOpenSidebar }
     .toUpperCase();
 
   return (
-    <header className="h-16 border-b border-gray-800 bg-[#0B0F14]/80 backdrop-blur sticky top-0 z-30 px-4 sm:px-6 flex items-center justify-between">
+    <header className="h-12 border-b border-soc-border bg-soc-base/90 backdrop-blur sticky top-0 z-30 px-4 sm:px-5 flex items-center justify-between text-xs">
       <div className="flex items-center gap-3">
         {onOpenSidebar && (
           <button
             onClick={onOpenSidebar}
-            className="p-1.5 -ml-1 text-gray-400 hover:text-white rounded-lg hover:bg-gray-850 lg:hidden"
+            className="p-1.5 -ml-1 text-gray-400 hover:text-white rounded-lg hover:bg-soc-panel lg:hidden"
             aria-label="Open Navigation Menu"
           >
             <Menu size={20} />
           </button>
         )}
 
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-mono font-semibold text-gray-300 hidden sm:inline">
-            CLUSTER: LIVE-SOC-01
-          </span>
+        <div className="hidden sm:flex items-center gap-1.5 font-mono text-xs text-gray-400">
+          <span className="text-gray-400">Overview</span>
+          <span className="text-gray-600">/</span>
+          <span className="text-gray-200 font-medium">SOC Realtime Monitoring</span>
         </div>
-        <div className="h-4 w-[1px] bg-gray-800 hidden sm:block" />
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 font-mono hidden md:inline">EPS:</span>
-          <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/20">
-            {eps} <span className="hidden sm:inline">events/sec</span>
+        <div className="h-4 w-px bg-soc-border hidden sm:block" />
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-soc-success/10 border border-soc-success/30">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-soc-success opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-soc-success" />
+          </span>
+          <span className="font-mono text-[11px] font-semibold text-soc-success tracking-tight">
+            SSE LIVE &middot; {eps} eps
           </span>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         {/* Hızlı Saldırı Simülatörü Butonları */}
-        <div className="hidden sm:flex items-center gap-1.5 bg-gray-900 border border-gray-800 p-1 rounded-lg">
+        <div className="hidden sm:flex items-center gap-1.5 bg-soc-card border border-soc-border p-1 rounded-lg">
           <button
             onClick={() => onTriggerSimulation("brute_force")}
             disabled={isSimulating}
-            className="px-2.5 py-1 text-[11px] font-medium rounded text-amber-300 hover:bg-amber-500/20 transition disabled:opacity-50"
+            className="px-2.5 py-1 text-[11px] font-medium rounded text-soc-high hover:bg-soc-high/15 transition disabled:opacity-50"
           >
             ⚡ Brute Force
           </button>
           <button
             onClick={() => onTriggerSimulation("port_scan")}
             disabled={isSimulating}
-            className="px-2.5 py-1 text-[11px] font-medium rounded text-cyan-300 hover:bg-cyan-500/20 transition disabled:opacity-50"
+            className="px-2.5 py-1 text-[11px] font-medium rounded text-soc-accent hover:bg-soc-accent/15 transition disabled:opacity-50"
           >
             🔍 Port Scan
           </button>
           <button
             onClick={() => onTriggerSimulation("exfiltration")}
             disabled={isSimulating}
-            className="px-2.5 py-1 text-[11px] font-medium rounded text-red-300 hover:bg-red-500/20 transition disabled:opacity-50"
+            className="px-2.5 py-1 text-[11px] font-medium rounded text-soc-critical hover:bg-soc-critical/15 transition disabled:opacity-50"
           >
             🚨 Exfil
           </button>
         </div>
 
-        <div className="h-4 w-[1px] bg-gray-800 hidden sm:block" />
+        <div className="h-4 w-px bg-soc-border hidden sm:block" />
 
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-xs font-bold text-cyan-400">
+          <div className="h-7 w-7 rounded-full bg-soc-accent/15 border border-soc-accent/40 flex items-center justify-center text-xs font-mono font-bold text-soc-accent">
             {initials}
           </div>
           <div className="text-left hidden md:block">
@@ -86,7 +88,7 @@ export function Header({ eps, onTriggerSimulation, isSimulating, onOpenSidebar }
             onClick={() => logout()}
             title="Sign Out"
             aria-label="Sign Out"
-            className="ml-1 rounded p-1.5 text-gray-400 hover:bg-gray-900 hover:text-red-400 transition"
+            className="ml-1 rounded p-1.5 text-gray-400 hover:bg-soc-panel hover:text-soc-critical transition"
           >
             <LogOut size={15} />
           </button>

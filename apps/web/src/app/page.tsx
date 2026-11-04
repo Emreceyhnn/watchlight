@@ -17,7 +17,7 @@ export default function SOCPortal() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0F14] text-gray-300 font-mono text-sm">
+      <div className="flex min-h-screen items-center justify-center bg-soc-base text-gray-300 font-mono text-sm">
         Initializing Watchlight SOC Engine...
       </div>
     );
@@ -156,7 +156,7 @@ function SOCDashboard({
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F14] text-gray-100 font-sans selection:bg-cyan-500 selection:text-black">
+    <div className="flex min-h-screen bg-soc-base text-gray-100 font-sans selection:bg-soc-accent/30 selection:text-white">
       {/* Yan Menü */}
       <Sidebar
         currentTab={currentTab}
@@ -166,7 +166,7 @@ function SOCDashboard({
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto lg:pl-0">
         {/* Üst Çubuk */}
         <Header
           eps={stats?.summary?.eps || 420}
@@ -176,7 +176,7 @@ function SOCDashboard({
         />
 
         {/* Ana İçerik */}
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-5 max-w-[1600px] w-full mx-auto">
           {currentTab === "dashboard" && (
             <DashboardView
               stats={stats}
@@ -187,9 +187,9 @@ function SOCDashboard({
           )}
 
           {currentTab === "stream" && (
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-              <h3 className="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
+            <div className="rounded-lg border border-soc-border bg-soc-card p-5">
+              <h3 className="text-sm font-heading font-semibold text-gray-200 mb-4 flex items-center gap-2 uppercase tracking-wider">
+                <Radio className="h-4 w-4 text-soc-accent animate-pulse" />
                 <span>Live Event Stream</span>
               </h3>
               <div
@@ -206,12 +206,12 @@ function SOCDashboard({
                   liveEvents.map((evt, idx) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded bg-gray-950/70 border border-gray-800/80 flex items-center justify-between"
+                      className="p-2.5 rounded bg-soc-base/70 border border-soc-border/80 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-cyan-400 font-bold">{evt.type}</span>
+                        <span className="text-soc-accent font-bold">{evt.type}</span>
                         <span className="text-gray-300">src: {evt.sourceIp}</span>
-                        {evt.username && <span className="text-amber-400">user: {evt.username}</span>}
+                        {evt.username && <span className="text-soc-high">user: {evt.username}</span>}
                       </div>
                       <span className="text-gray-400 text-[10px] font-semibold">{evt.geoCountry || "TR"}</span>
                     </div>
@@ -233,11 +233,11 @@ function SOCDashboard({
           )}
 
           {currentTab === "incidents" && (
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
-              <div className="flex items-center justify-between mb-4 border-b border-gray-800 pb-3">
-                <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-emerald-400" />
-                  <span>SOC Incident Management & Resolution Lifecycle</span>
+            <div className="rounded-lg border border-soc-border bg-soc-card p-5">
+              <div className="flex items-center justify-between mb-4 border-b border-soc-border pb-3">
+                <h3 className="text-sm font-heading font-semibold text-gray-200 flex items-center gap-2 uppercase tracking-wider">
+                  <FileText className="h-4 w-4 text-soc-success" />
+                  <span>SOC Incident Management &amp; Resolution Lifecycle</span>
                 </h3>
                 <span className="text-xs font-mono text-gray-400">
                   Total Active Incidents: {incidents.filter((i) => i.status !== "CLOSED").length}
@@ -252,12 +252,12 @@ function SOCDashboard({
                   incidents.map((inc) => (
                     <div
                       key={inc.id}
-                      className="p-4 rounded-lg border border-gray-800 bg-gray-950/70 space-y-3"
+                      className="p-4 rounded-lg border border-soc-border bg-soc-base/70 space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="font-semibold text-sm text-gray-100">{inc.title}</div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-soc-high/15 text-soc-high border border-soc-high/40">
                             {inc.priority} • {inc.status}
                           </span>
                           {/* Incident Lifecycle Status Actions */}
@@ -271,7 +271,7 @@ function SOCDashboard({
                                 });
                                 fetchData();
                               }}
-                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-blue-900/40 text-blue-300 border border-blue-700/50 hover:bg-blue-800/50"
+                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-soc-accent/15 text-soc-accent border border-soc-accent/40 hover:bg-soc-accent/25"
                             >
                               Start Investigation
                             </button>
@@ -286,7 +286,7 @@ function SOCDashboard({
                                 });
                                 fetchData();
                               }}
-                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-900/40 text-emerald-300 border border-emerald-700/50 hover:bg-emerald-800/50"
+                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-soc-success/15 text-soc-success border border-soc-success/40 hover:bg-soc-success/25"
                             >
                               Mark Mitigated
                             </button>
@@ -301,7 +301,7 @@ function SOCDashboard({
                                 });
                                 fetchData();
                               }}
-                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700"
+                              className="px-2 py-0.5 text-[10px] font-mono rounded bg-soc-panel text-gray-300 border border-soc-border hover:bg-soc-elevated"
                             >
                               Close Incident
                             </button>
@@ -309,7 +309,7 @@ function SOCDashboard({
                         </div>
                       </div>
                       <p className="text-xs text-gray-300">{inc.summary}</p>
-                      <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 pt-1 border-t border-gray-850">
+                      <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 pt-1 border-t border-soc-border-soft">
                         <span>Assignee: <strong className="text-gray-200">{inc.assignee}</strong></span>
                         <span>Created: {new Date(inc.createdAt).toLocaleString()}</span>
                       </div>

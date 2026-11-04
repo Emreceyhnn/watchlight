@@ -57,7 +57,8 @@ export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg rounded-xl border border-soc-border bg-soc-panel shadow-2xl">
+      <div className="w-full max-w-lg rounded-xl border border-soc-border bg-soc-panel shadow-2xl relative">
+        <div className="absolute top-0 left-6 right-6 h-[1.5px] bg-gradient-to-r from-transparent via-soc-accent/80 to-transparent" />
         <div className="flex items-center justify-between px-6 py-4 border-b border-soc-border-soft">
           <div className="flex items-center gap-2 text-soc-accent font-heading font-semibold text-sm">
             <ShieldAlert className="h-4 w-4" />

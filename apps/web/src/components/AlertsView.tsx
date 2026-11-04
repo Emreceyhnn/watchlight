@@ -9,10 +9,10 @@ interface AlertsViewProps {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "border-red-500/40 bg-red-950/20 text-red-400",
-  HIGH: "border-amber-500/40 bg-amber-950/20 text-amber-400",
-  MEDIUM: "border-blue-500/40 bg-blue-950/20 text-blue-400",
-  LOW: "border-emerald-500/40 bg-emerald-950/20 text-emerald-400",
+  CRITICAL: "border-soc-critical/40 bg-soc-critical/10 text-soc-critical",
+  HIGH: "border-soc-high/40 bg-soc-high/10 text-soc-high",
+  MEDIUM: "border-soc-accent/40 bg-soc-accent/10 text-soc-accent",
+  LOW: "border-soc-success/40 bg-soc-success/10 text-soc-success",
 };
 
 export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
@@ -26,11 +26,11 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
   });
 
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-5 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800 pb-4">
+    <div className="rounded-lg border border-soc-border bg-soc-card p-5 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-soc-border pb-4">
         <div>
-          <h2 className="text-base font-semibold text-gray-100 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-400" />
+          <h2 className="text-base font-heading font-semibold text-gray-100 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-soc-high" />
             <span>SIEM Security Alerts Queue</span>
           </h2>
           <p className="text-xs text-gray-400 font-mono mt-0.5">
@@ -43,7 +43,7 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="bg-gray-950 border border-gray-800 rounded px-2.5 py-1 text-xs text-gray-300 outline-none focus:border-cyan-500"
+            className="bg-soc-base border border-soc-border rounded px-2.5 py-1 text-xs text-gray-300 outline-none focus:border-soc-accent"
           >
             <option value="ALL">All Severities</option>
             <option value="CRITICAL">Critical</option>
@@ -55,7 +55,7 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-gray-950 border border-gray-800 rounded px-2.5 py-1 text-xs text-gray-300 outline-none focus:border-cyan-500"
+            className="bg-soc-base border border-soc-border rounded px-2.5 py-1 text-xs text-gray-300 outline-none focus:border-soc-accent"
           >
             <option value="ALL">All Statuses</option>
             <option value="OPEN">Open</option>
@@ -75,13 +75,13 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
           {filteredAlerts.map((alert) => (
             <div
               key={alert.id}
-              className="p-3.5 rounded-lg border border-gray-800 bg-gray-950/70 hover:border-gray-700 transition flex flex-col md:flex-row md:items-center justify-between gap-3"
+              className="p-3.5 rounded-lg border border-soc-border bg-soc-base/70 hover:border-gray-700 transition flex flex-col md:flex-row md:items-center justify-between gap-3"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span
                     className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                      SEVERITY_COLORS[alert.severity] || "border-gray-700 bg-gray-900 text-gray-400"
+                      SEVERITY_COLORS[alert.severity] || "border-soc-border bg-soc-panel text-gray-400"
                     }`}
                   >
                     {alert.severity}
@@ -90,7 +90,7 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
                     {alert.rule?.name || alert.title || "Correlation Alert"}
                   </span>
                   {alert.rule?.attackTechnique && (
-                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-800/40">
+                    <span className="text-[10px] font-mono text-soc-accent bg-soc-accent/10 px-1.5 py-0.5 rounded border border-soc-accent/30">
                       MITRE {alert.rule.attackTechnique}
                     </span>
                   )}
@@ -107,12 +107,12 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-gray-900 border border-gray-800 text-gray-300">
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-soc-panel border border-soc-border text-gray-300">
                   {alert.status}
                 </span>
                 <button
                   onClick={() => onOpenIncidentModal(alert)}
-                  className="px-2.5 py-1 rounded bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 text-xs font-mono hover:bg-cyan-600/30 transition flex items-center gap-1"
+                  className="px-2.5 py-1 rounded bg-soc-accent/15 text-soc-accent border border-soc-accent/30 text-xs font-mono hover:bg-soc-accent/25 transition flex items-center gap-1"
                 >
                   <ExternalLink size={12} />
                   <span>Triage</span>
