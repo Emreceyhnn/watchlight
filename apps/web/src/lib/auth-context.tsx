@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.data.user);
       return { success: true };
     } catch {
-      return { success: false, message: "Sunucuya bağlanılamadı." };
+      return { success: false, message: "Could not connect to the server." };
     }
   }, []);
 

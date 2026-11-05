@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "Olaylar sorgulanırken hata oluştu.",
+          message: "An error occurred while querying events.",
         },
       },
       { status: 500 }

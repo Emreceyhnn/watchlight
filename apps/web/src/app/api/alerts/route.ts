@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: alerts });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Alarmlar alınamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to fetch alerts." } },
       { status: 500 }
     );
   }

@@ -34,7 +34,7 @@ export async function GET(
           success: false,
           error: {
             code: "NOT_FOUND",
-            message: "Olay kaydı bulunamadı.",
+            message: "Incident record not found.",
           },
         },
         { status: 404 }
@@ -46,7 +46,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        error: { code: "SERVER_ERROR", message: "Olay detayı alınamadı." },
+        error: { code: "SERVER_ERROR", message: "Failed to fetch incident detail." },
       },
       { status: 500 }
     );
@@ -72,7 +72,7 @@ export async function PATCH(
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Geçersiz güncelleme parametreleri.",
+            message: "Invalid update parameters.",
             details: parse.error.flatten(),
           },
         },
@@ -86,7 +86,7 @@ export async function PATCH(
     const existing = await prisma.incident.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json(
-        { success: false, error: { code: "NOT_FOUND", message: "Olay bulunamadı." } },
+        { success: false, error: { code: "NOT_FOUND", message: "Incident not found." } },
         { status: 404 }
       );
     }
@@ -137,7 +137,7 @@ export async function PATCH(
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Olay güncellenemedi." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to update incident." } },
       { status: 500 }
     );
   }

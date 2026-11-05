@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   if (!ticket) {
     return NextResponse.json(
-      { success: false, error: { code: "UNAUTHORIZED", message: "Geçerli bir bağlantı ticket'ı gereklidir." } },
+      { success: false, error: { code: "UNAUTHORIZED", message: "A valid connection ticket is required." } },
       { status: 401 }
     );
   }
@@ -28,14 +28,14 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("[SSE] Ticket lookup failed:", err);
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Bağlantı doğrulanamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Could not verify the connection." } },
       { status: 500 }
     );
   }
 
   if (!ticketPayload) {
     return NextResponse.json(
-      { success: false, error: { code: "UNAUTHORIZED", message: "Ticket geçersiz veya süresi dolmuş." } },
+      { success: false, error: { code: "UNAUTHORIZED", message: "Ticket is invalid or has expired." } },
       { status: 401 }
     );
   }

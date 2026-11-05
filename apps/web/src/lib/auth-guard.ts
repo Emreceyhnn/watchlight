@@ -16,7 +16,7 @@ export async function authenticateRequest(
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Yetkilendirme başlığı (Bearer token) eksik veya hatalı.",
+            message: "Missing or invalid Authorization header (Bearer token).",
           },
         },
         { status: 401 }
@@ -35,7 +35,7 @@ export async function authenticateRequest(
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Geçersiz veya süresi dolmuş token.",
+            message: "Invalid or expired token.",
           },
         },
         { status: 401 }
@@ -51,7 +51,7 @@ export async function authenticateRequest(
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Bu işlem için yetkiniz bulunmamaktadır.",
+            message: "You are not authorized to perform this action.",
           },
         },
         { status: 403 }

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: rules });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Kurallar alınamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to fetch rules." } },
       { status: 500 }
     );
   }
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Geçersiz kural parametreleri.",
+            message: "Invalid rule parameters.",
             details: parse.error.flatten(),
           },
         },
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: newRule }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Kural oluşturulamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to create rule." } },
       { status: 500 }
     );
   }

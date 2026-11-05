@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Geçersiz veya eksik X-API-Key başlığı.",
+            message: "Missing or invalid X-API-Key header.",
           },
         },
         { status: 401 }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: { code: "RATE_LIMITED", message: "İstek limiti aşıldı." },
+          error: { code: "RATE_LIMITED", message: "Request rate limit exceeded." },
         },
         { status: 429, headers: { "Retry-After": String(limitResult.resetSec) } }
       );
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const contentLength = req.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
       return NextResponse.json(
-        { success: false, error: { code: "PAYLOAD_TOO_LARGE", message: "İstek gövdesi çok büyük." } },
+        { success: false, error: { code: "PAYLOAD_TOO_LARGE", message: "Request body is too large." } },
         { status: 413 }
       );
     }
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
           totalBytes += value.length;
           if (totalBytes > MAX_BODY_BYTES) {
             return NextResponse.json(
-              { success: false, error: { code: "PAYLOAD_TOO_LARGE", message: "İstek gövdesi 256KB sınırını aştı." } },
+              { success: false, error: { code: "PAYLOAD_TOO_LARGE", message: "Request body exceeds the 256KB limit." } },
               { status: 413 }
             );
           }
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
             success: false,
             error: {
               code: "PARSE_ERROR",
-              message: "Ham log ayrıştırılamadı.",
+              message: "Failed to parse raw log.",
             },
           },
           { status: 400 }
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
             success: false,
             error: {
               code: "VALIDATION_ERROR",
-              message: "Ayrıştırılan log şema doğrulamasından geçemedi.",
+              message: "Parsed log failed schema validation.",
               details: validated.error.flatten(),
             },
           },
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
             success: false,
             error: {
               code: "VALIDATION_ERROR",
-              message: "Geçersiz batch formatı.",
+              message: "Invalid batch format.",
               details: batchResult.error.flatten(),
             },
           },
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Geçersiz event formatı.",
+            message: "Invalid event format.",
             details: singleResult.error.flatten(),
           },
         },
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "Log alımı sırasında dahili sunucu hatası.",
+          message: "Internal server error while ingesting log.",
         },
       },
       { status: 500 }

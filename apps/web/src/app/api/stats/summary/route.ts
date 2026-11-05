@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("[Stats API] Error calculating statistics:", error);
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "İstatistikler hesaplanamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to calculate statistics." } },
       { status: 500 }
     );
   }

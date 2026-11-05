@@ -6,6 +6,8 @@ import "leaflet/dist/leaflet.css";
 
 interface ThreatMapProps {
   alerts: any[];
+  onOpenIncidentModal?: (alert: any) => void;
+  fill?: boolean;
 }
 
 // Ülke koordinat eşlemeleri (Demo ve küresel saldırı kaynakları için)
@@ -22,7 +24,20 @@ const COUNTRY_COORDINATES: Record<string, [number, number]> = {
   BR: [-14.235, -51.9253],
 };
 
-export default function ThreatMap({ alerts }: ThreatMapProps) {
+const CARTO_API_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+
+// Anahtarsız kota aşıldığında CARTO "API KEY REQUIRED" görseli döndürüyor;
+// anahtar varsa CARTO'nun resmi key'li uç noktasını, yoksa anahtar
+// gerektirmeyen OpenStreetMap karo sunucusunu kullan.
+const TILE_URL = CARTO_API_KEY
+  ? `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`
+  : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+const TILE_ATTRIBUTION = CARTO_API_KEY
+  ? '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+export default function ThreatMap({ alerts, onOpenIncidentModal, fill }: ThreatMapProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,10 +47,21 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
   if (!mounted) return null;
 
   // Haritada gösterilecek anomali noktaları
+  // Aynı ülkeden gelen birden fazla alert üst üste binmesin diye küçük bir jitter uygulanır
+  const countryOccurrence: Record<string, number> = {};
   const points = alerts.slice(0, 15).map((a, i) => {
     // Kaynak ülke veya varsayılan koordinat
     const country = a.geoCountry || "RU";
-    const coords = COUNTRY_COORDINATES[country] || [50 + (i % 5), 20 + (i % 10)];
+    const base = COUNTRY_COORDINATES[country] || [50 + (i % 5), 20 + (i % 10)];
+    const occurrence = countryOccurrence[country] || 0;
+    countryOccurrence[country] = occurrence + 1;
+    // Her tekrar için küçük bir dairesel ofset (aynı ülkede maks. ~8 marker ayırt edilebilir)
+    const angle = occurrence * 0.9;
+    const radius = occurrence === 0 ? 0 : 1.2 + occurrence * 0.4;
+    const coords: [number, number] = [
+      base[0] + Math.sin(angle) * radius,
+      base[1] + Math.cos(angle) * radius,
+    ];
     return {
       id: a.id || i,
       coords,
@@ -43,12 +69,17 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
       severity: a.severity,
       technique: a.rule?.attackTechnique || "T1110",
       ruleName: a.rule?.name || "Security Anomaly",
+      alert: a,
     };
   });
 
   return (
     <div
-      className="h-80 w-full rounded-lg overflow-hidden border border-gray-800 relative z-10"
+      className={
+        fill
+          ? "h-full w-full relative z-10"
+          : "h-80 w-full rounded-lg overflow-hidden border border-gray-800 relative z-10"
+      }
       role="region"
       aria-label="Threat Geolocation Map"
     >
@@ -68,11 +99,8 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
         scrollWheelZoom={false}
         className="h-full w-full bg-[#0B0F14]"
       >
-        {/* CartoDB DarkMatter Tiles (SOC karanlık tema için optimize) */}
-        <TileLayer
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
+        {/* CartoDB DarkMatter GL Tiles (SOC karanlık tema için optimize) */}
+        <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
 
         {points.map((pt) => {
           const color =
@@ -95,10 +123,26 @@ export default function ThreatMap({ alerts }: ThreatMapProps) {
               }}
             >
               <Popup className="soc-popup">
-                <div className="p-1 font-mono text-xs text-gray-900">
-                  <div className="font-bold text-red-600">{pt.technique}</div>
+                <div className="p-1 font-mono text-xs text-gray-900 space-y-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+                      style={{ backgroundColor: color }}
+                    >
+                      {pt.severity}
+                    </span>
+                    <span className="font-bold text-gray-900">MITRE {pt.technique}</span>
+                  </div>
                   <div>IP: {pt.ip}</div>
                   <div className="text-[10px] text-gray-700">{pt.ruleName}</div>
+                  {onOpenIncidentModal && (
+                    <button
+                      onClick={() => onOpenIncidentModal(pt.alert)}
+                      className="mt-1 w-full rounded bg-gray-900 px-2 py-1 text-[11px] font-semibold text-white hover:bg-gray-700"
+                    >
+                      Triage Alert
+                    </button>
+                  )}
                 </div>
               </Popup>
             </CircleMarker>

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!ingestApiKey) {
     console.error("[Simulate API] INGEST_API_KEY is not configured.");
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Simülasyon servisi yapılandırılmamış." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Simulation service is not configured." } },
       { status: 500 }
     );
   }
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[Simulate API] Proxy error:", error);
     return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_SERVER_ERROR", message: "Simülasyon tetiklenemedi." } },
+      { success: false, error: { code: "INTERNAL_SERVER_ERROR", message: "Failed to trigger simulation." } },
       { status: 500 }
     );
   }

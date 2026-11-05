@@ -186,10 +186,17 @@ function SOCDashboard({
           onTriggerSimulation={handleTriggerSimulation}
           isSimulating={isSimulating}
           onOpenSidebar={() => setIsSidebarOpen(true)}
+          currentTab={currentTab}
         />
 
         {/* Ana İçerik */}
-        <main className="flex-1 p-5 max-w-[1600px] w-full mx-auto">
+        <main
+          className={
+            currentTab === "threatmap"
+              ? "flex-1 flex flex-col min-h-0"
+              : "flex-1 p-5 max-w-[1600px] w-full mx-auto"
+          }
+        >
           {currentTab === "dashboard" && (
             <DashboardView
               stats={stats}
@@ -212,8 +219,12 @@ function SOCDashboard({
                 role="status"
               >
                 {liveEvents.length === 0 ? (
-                  <div className="text-gray-400 py-6 text-center">
-                    📡 Listening on &apos;events:stream&apos; Pub/Sub...
+                  <div className="text-gray-400 py-10 text-center space-y-2">
+                    <Radio className="h-5 w-5 mx-auto text-gray-500" />
+                    <p>Listening on &apos;events:stream&apos; Pub/Sub &mdash; no events yet.</p>
+                    <p className="text-[11px] text-gray-500">
+                      Trigger a scenario above (Brute Force / Port Scan / Exfil) to see live events stream in here.
+                    </p>
                   </div>
                 ) : (
                   liveEvents.map((evt, idx) => (
@@ -242,7 +253,10 @@ function SOCDashboard({
           )}
 
           {currentTab === "threatmap" && (
-            <FullThreatMapView alerts={alerts} />
+            <FullThreatMapView
+              alerts={alerts}
+              onOpenIncidentModal={(alert) => setSelectedAlertForIncident(alert)}
+            />
           )}
 
           {currentTab === "incidents" && (

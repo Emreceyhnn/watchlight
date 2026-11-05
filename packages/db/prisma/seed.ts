@@ -57,7 +57,7 @@ async function main() {
   const defaultRules = [
     {
       name: "Brute Force Attack",
-      description: "Tek bir kaynak IP'den 10 dakika içerisinde 5 veya daha fazla başarısız oturum açma denemesi.",
+      description: "5 or more failed login attempts from a single source IP within 10 minutes.",
       eventTypes: [EventType.AUTH_FAILED],
       windowSec: 600,
       threshold: 5,
@@ -68,7 +68,7 @@ async function main() {
     },
     {
       name: "Credential Stuffing",
-      description: "Aynı kaynak IP'den farklı kullanıcı adları hedeflenerek yapılan 10'dan fazla başarısız oturum açma.",
+      description: "More than 10 failed logins from the same source IP targeting different usernames.",
       eventTypes: [EventType.AUTH_FAILED],
       windowSec: 600,
       threshold: 10,
@@ -79,7 +79,7 @@ async function main() {
     },
     {
       name: "Impossible Travel / Geolocation Anomaly",
-      description: "Aynı kullanıcı hesabı ile 30 dakika içerisinde farklı ülkelerden başarılı oturum açılması.",
+      description: "Successful logins to the same user account from different countries within 30 minutes.",
       eventTypes: [EventType.AUTH_LOGIN],
       windowSec: 1800,
       threshold: 2,
@@ -90,7 +90,7 @@ async function main() {
     },
     {
       name: "Network Reconnaissance / Port Scan",
-      description: "Tek bir kaynak IP adresinden 60 saniye içinde 20 veya daha fazla farklı bağlantı/port taraması.",
+      description: "20 or more distinct connection/port scans from a single source IP within 60 seconds.",
       eventTypes: [EventType.NETWORK_SCAN, EventType.NETWORK_CONNECT],
       windowSec: 60,
       threshold: 20,
@@ -101,7 +101,7 @@ async function main() {
     },
     {
       name: "Data Exfiltration Over Alternative Protocol",
-      description: "Tek bir kaynaktan anormal boyutta veya tekrarlayan veri transferi (100MB+ / DATA_TRANSFER).",
+      description: "Abnormally large or repeated data transfer from a single source (100MB+ / DATA_TRANSFER).",
       eventTypes: [EventType.DATA_TRANSFER],
       windowSec: 300,
       threshold: 5,
@@ -112,7 +112,7 @@ async function main() {
     },
     {
       name: "Unauthorized Administrative Execution",
-      description: "Yetkisiz veya şüpheli işlem düzeyinde process yürütme girişimi.",
+      description: "Attempted process execution at an unauthorized or suspicious privilege level.",
       eventTypes: [EventType.PROCESS_EXEC],
       windowSec: 120,
       threshold: 3,
@@ -123,7 +123,7 @@ async function main() {
     },
     {
       name: "API Rate Abuse / Flood",
-      description: "Tek bir kaynak tarafından 60 saniyede 100'den fazla API çağrısı yapılması.",
+      description: "More than 100 API calls made by a single source within 60 seconds.",
       eventTypes: [EventType.API_CALL],
       windowSec: 60,
       threshold: 100,

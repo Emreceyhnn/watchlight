@@ -262,7 +262,10 @@ export function DashboardView({
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs font-mono">
             {pieData.map((d) => (
-              <div key={d.name} className="flex items-center gap-1.5">
+              <div
+                key={d.name}
+                className={`flex items-center gap-1.5 ${d.value === 0 ? "opacity-40" : ""}`}
+              >
                 <span
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: SEVERITY_COLORS[d.name] }}
@@ -308,8 +311,9 @@ export function DashboardView({
 
         <div className="space-y-2.5">
           {alerts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-xs font-mono">
-              🛡️ No active alerts in queue. System secure.
+            <div className="flex items-center justify-center gap-2 py-8 text-gray-500 text-xs font-mono">
+              <ShieldAlert className="h-4 w-4" />
+              <span>No active alerts in queue. System secure.</span>
             </div>
           ) : (
             alerts.slice(0, 5).map((alert) => (

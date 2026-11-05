@@ -110,13 +110,23 @@ export function AlertsView({ alerts, onOpenIncidentModal }: AlertsViewProps) {
                 <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-soc-panel border border-soc-border text-gray-300">
                   {alert.status}
                 </span>
-                <button
-                  onClick={() => onOpenIncidentModal(alert)}
-                  className="px-2.5 py-1 rounded bg-soc-accent/15 text-soc-accent border border-soc-accent/30 text-xs font-mono hover:bg-soc-accent/25 transition flex items-center gap-1"
-                >
-                  <ExternalLink size={12} />
-                  <span>Triage</span>
-                </button>
+                {alert.status === "OPEN" ? (
+                  <button
+                    onClick={() => onOpenIncidentModal(alert)}
+                    className="px-2.5 py-1 rounded bg-soc-accent/15 text-soc-accent border border-soc-accent/30 text-xs font-mono hover:bg-soc-accent/25 transition flex items-center gap-1"
+                  >
+                    <ExternalLink size={12} />
+                    <span>Triage</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onOpenIncidentModal(alert)}
+                    className="px-2.5 py-1 rounded bg-soc-panel text-gray-400 border border-soc-border text-xs font-mono hover:bg-soc-elevated transition flex items-center gap-1"
+                  >
+                    <CheckCircle size={12} />
+                    <span>View</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}

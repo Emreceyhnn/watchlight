@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Geçersiz e-posta veya parola formatı.",
+            message: "Invalid email or password format.",
             details: parseResult.error.flatten(),
           },
         },
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Hatalı kimlik bilgileri.",
+            message: "Invalid credentials.",
           },
         },
         { status: 401 }
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "Sunucu hatası oluştu.",
+          message: "A server error occurred.",
         },
       },
       { status: 500 }

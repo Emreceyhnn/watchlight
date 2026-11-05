@@ -39,3 +39,27 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #3b4759;
 }
+
+/* Leaflet zoom control: match the SOC dark theme instead of the default white box */
+.leaflet-control-zoom {
+  border: 1px solid #262e3d !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+.leaflet-control-zoom a {
+  background-color: #141a22 !important;
+  color: #c7ccd6 !important;
+  border-color: #262e3d !important;
+}
+.leaflet-control-zoom a:hover {
+  background-color: #1b222c !important;
+  color: #ffffff !important;
+}
+.leaflet-control-attribution {
+  background-color: rgba(10, 13, 18, 0.7) !important;
+  color: #7b8699 !important;
+}
+.leaflet-control-attribution a {
+  color: #5b8cff !important;
+}

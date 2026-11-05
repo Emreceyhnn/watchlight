@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Refresh token bulunamadı.",
+            message: "Refresh token not found.",
           },
         },
         { status: 401 }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Geçersiz veya süresi dolmuş refresh token.",
+            message: "Invalid or expired refresh token.",
           },
         },
         { status: 401 }
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "UNAUTHORIZED",
-            message: "Kullanıcı bulunamadı.",
+            message: "User not found.",
           },
         },
         { status: 401 }
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "Token yenileme işlemi başarısız.",
+          message: "Token refresh failed.",
         },
       },
       { status: 500 }

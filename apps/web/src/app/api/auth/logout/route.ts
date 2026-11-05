@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      data: { message: "Oturum başarıyla kapatıldı." },
+      data: { message: "Session closed successfully." },
     });
 
     response.cookies.delete("wl_refresh_token");
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         success: false,
         error: {
           code: "INTERNAL_SERVER_ERROR",
-          message: "Çıkış yapılırken bir sorun oluştu.",
+          message: "A problem occurred while logging out.",
         },
       },
       { status: 500 }

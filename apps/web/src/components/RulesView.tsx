@@ -71,10 +71,12 @@ export function RulesView({ authFetch }: RulesViewProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rules.map((rule) => (
+          {rules.map((rule, idx) => (
             <div
               key={rule.id}
-              className="p-4 rounded-lg border border-soc-border bg-soc-base/70 space-y-3"
+              className={`p-4 rounded-lg border border-soc-border bg-soc-base/70 space-y-3 ${
+                idx === rules.length - 1 && rules.length % 2 !== 0 ? "md:col-span-2" : ""
+              }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

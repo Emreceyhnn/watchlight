@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: incidents });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Incident listesi alınamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to fetch incident list." } },
       { status: 500 }
     );
   }
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Geçersiz incident verisi.",
+            message: "Invalid incident data.",
             details: parse.error.flatten(),
           },
         },
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[Incident API] Error creating incident:", error);
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Incident oluşturulamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to create incident." } },
       { status: 500 }
     );
   }

@@ -16,7 +16,16 @@ export function Sidebar({
   isOpen = false,
   onClose,
 }: SidebarProps) {
-  const [workerOnline, setWorkerOnline] = useState<boolean | null>(null);
+  const [workerOnline, setWorkerOnline] = useState<boolean | null>(() => {
+    // İlk render'da son bilinen durumu localStorage'dan oku; böylece sayfa
+    // geçişlerinde kısa süreli "CHECKING" titremesi oluşmaz.
+    try {
+      const cached = localStorage.getItem("watchlight:workerOnline");
+      return cached === null ? null : cached === "true";
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     const checkWorker = async () => {
@@ -24,7 +33,13 @@ export function Sidebar({
         const res = await fetch("/api/health");
         if (res.ok) {
           const json = await res.json();
-          setWorkerOnline(!!json.worker?.online);
+          const online = !!json.worker?.online;
+          setWorkerOnline(online);
+          try {
+            localStorage.setItem("watchlight:workerOnline", String(online));
+          } catch {
+            // localStorage kullanılamıyorsa sessizce yoksay
+          }
         } else {
           setWorkerOnline(false);
         }

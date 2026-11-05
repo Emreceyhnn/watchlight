@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[StreamTicket] Redis error:", err);
     return NextResponse.json(
-      { success: false, error: { code: "SERVER_ERROR", message: "Ticket oluşturulamadı." } },
+      { success: false, error: { code: "SERVER_ERROR", message: "Failed to create ticket." } },
       { status: 500 }
     );
   }
