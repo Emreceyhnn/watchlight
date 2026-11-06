@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Kullanıcının veritabanında halen aktif olduğunu doğrula
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
     });
@@ -52,7 +51,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Eski refresh token'ı revoke et (Rotation prensibi)
     if (payload.jti) {
       await revokeToken(payload.jti);
     }

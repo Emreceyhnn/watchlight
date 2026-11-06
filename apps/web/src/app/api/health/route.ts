@@ -6,16 +6,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // 1. PostgreSQL bağlantı kontrolü
     await prisma.$queryRaw`SELECT 1`;
 
-    // 2. Redis bağlantı ve ping kontrolü
     const pong = await redis.ping();
     if (pong !== "PONG") {
       throw new Error("Redis ping failed");
     }
-    
-    // 3. Worker heartbeat kontrolü
+
     let workerOnline = false;
     try {
       const hb = await redis.get("worker:heartbeat");

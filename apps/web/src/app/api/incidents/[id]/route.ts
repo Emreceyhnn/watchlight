@@ -96,14 +96,14 @@ export async function PATCH(
       timelineActions.push({
         actor: actorUser,
         action: "STATUS_CHANGE",
-        note: `Durum güncellendi: ${existing.status} -> ${status}. ${note || ""}`.trim(),
+        note: `Status updated: ${existing.status} -> ${status}. ${note || ""}`.trim(),
       });
     }
     if (assignee && assignee !== existing.assignee) {
       timelineActions.push({
         actor: actorUser,
         action: "ASSIGN",
-        note: `Yeni atama yapıldı: ${assignee}. ${note || ""}`.trim(),
+        note: `Reassigned to: ${assignee}. ${note || ""}`.trim(),
       });
     }
     if (note && timelineActions.length === 0) {

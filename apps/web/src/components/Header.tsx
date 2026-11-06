@@ -61,7 +61,6 @@ export function Header({ eps, onTriggerSimulation, isSimulating, onOpenSidebar, 
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Hızlı Saldırı Simülatörü Butonları (sm ve üstü: header içinde) */}
           <div className="hidden sm:flex items-center gap-1.5 bg-soc-card border border-soc-border p-1 rounded-lg">
             <button
               onClick={() => onTriggerSimulation("brute_force")}
@@ -108,7 +107,6 @@ export function Header({ eps, onTriggerSimulation, isSimulating, onOpenSidebar, 
         </div>
       </header>
 
-      {/* Mobilde (sm altı) simülatör butonları ikinci bir şeritte gösterilir */}
       <div className="sm:hidden flex items-center gap-1.5 bg-soc-card border-b border-soc-border px-2 py-1.5 overflow-x-auto">
         <button
           onClick={() => onTriggerSimulation("brute_force")}

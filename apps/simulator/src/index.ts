@@ -16,7 +16,6 @@ interface SimulationScenario {
   run: () => Promise<void>;
 }
 
-// Rastgele IP ve Kullanıcı Havuzu
 const NORMAL_IPS = ["192.168.1.10", "192.168.1.25", "10.0.0.15", "10.0.0.42", "88.241.12.8"];
 const ATTACKER_IPS = ["185.220.101.5", "45.154.255.89", "194.26.29.112", "91.240.118.17"];
 const USERS = ["admin", "root", "analyst_emre", "devops", "john.doe", "service-account"];
@@ -52,12 +51,9 @@ async function sendBatch(events: IngestEventPayload[]) {
   }
 }
 
-/**
- * Senaryo 1: SSH / Auth Password Spraying & Brute Force (T1110.001)
- */
 async function simulateBruteForce() {
   const attackerIp = ATTACKER_IPS[0];
-  console.log(`\n🚨 [Senaryo] SSH Brute Force Saldırısı başlatılıyor (IP: ${attackerIp})...`);
+  console.log(`\n🚨 [Scenario] Starting SSH brute-force attack (IP: ${attackerIp})...`);
   const batch: IngestEventPayload[] = [];
   
   for (let i = 0; i < 8; i++) {
@@ -73,15 +69,12 @@ async function simulateBruteForce() {
   }
 
   await sendBatch(batch);
-  console.log(`✅ [Senaryo] 8 başarısız giriş denemesi gönderildi (T1110.001 tetiklenmeli).`);
+  console.log(`✅ [Scenario] Sent 8 failed login attempts (should trigger T1110.001).`);
 }
 
-/**
- * Senaryo 2: Port & Network Reconnaissance Scan (T1046)
- */
 async function simulatePortScan() {
   const attackerIp = ATTACKER_IPS[1];
-  console.log(`\n🔍 [Senaryo] Network Reconnaissance / Port Scan başlatılıyor (IP: ${attackerIp})...`);
+  console.log(`\n🔍 [Scenario] Starting network reconnaissance / port scan (IP: ${attackerIp})...`);
   const targetPorts = [21, 22, 23, 25, 80, 443, 3389, 8080, 8443, 9200, 27017, 5432];
   const batch: IngestEventPayload[] = targetPorts.map((port, idx) => ({
     timestamp: new Date(Date.now() - (targetPorts.length - idx) * 500).toISOString(),
@@ -93,15 +86,12 @@ async function simulatePortScan() {
   }));
 
   await sendBatch(batch);
-  console.log(`✅ [Senaryo] 12 port SYN tarama paketi gönderildi (T1046 tetiklenmeli).`);
+  console.log(`✅ [Scenario] Sent 12 SYN port-scan packets (should trigger T1046).`);
 }
 
-/**
- * Senaryo 3: Data Exfiltration via Encrypted Channel (T1048)
- */
 async function simulateDataExfiltration() {
   const attackerIp = ATTACKER_IPS[2];
-  console.log(`\n💾 [Senaryo] Veri Sızıntısı / Exfiltration başlatılıyor (IP: ${attackerIp})...`);
+  console.log(`\n💾 [Scenario] Starting data exfiltration (IP: ${attackerIp})...`);
   const batch: IngestEventPayload[] = [
     {
       timestamp: new Date().toISOString(),
@@ -111,7 +101,7 @@ async function simulateDataExfiltration() {
       username: "analyst_emre",
       geoCountry: COUNTRIES[attackerIp] || "IR",
       payload: {
-        bytesTransferred: 52428800, // 50 MB
+        bytesTransferred: 52428800,
         protocol: "HTTPS",
         destinationDomain: "cloud-drop-exfil.org",
         file: "database_dump_2026.sql.gz",
@@ -120,17 +110,13 @@ async function simulateDataExfiltration() {
   ];
 
   await sendBatch(batch);
-  console.log(`✅ [Senaryo] 50MB boyutta şüpheli veri aktarımı gönderildi (T1048 tetiklenmeli).`);
+  console.log(`✅ [Scenario] Sent a suspicious 50MB data transfer (should trigger T1048).`);
 }
 
-/**
- * Senaryo 4: Impossible Travel Anomaly
- */
 async function simulateImpossibleTravel() {
-  console.log(`\n✈️ [Senaryo] Impossible Travel Anomalisı simüle ediliyor...`);
+  console.log(`\n✈️ [Scenario] Simulating impossible-travel anomaly...`);
   const user = "analyst_emre";
 
-  // 1. İstanbul'dan giriş
   await sendBatch([
     {
       timestamp: new Date(Date.now() - 120000).toISOString(),
@@ -142,7 +128,6 @@ async function simulateImpossibleTravel() {
     },
   ]);
 
-  // 2. 2 dakika sonra Hong Kong'dan giriş
   await sendBatch([
     {
       timestamp: new Date().toISOString(),
@@ -153,12 +138,9 @@ async function simulateImpossibleTravel() {
       payload: { city: "Hong Kong", userAgent: "Mozilla/5.0 Linux" },
     },
   ]);
-  console.log(`✅ [Senaryo] 2 dakika arayla TR -> CN login event'i üretildi.`);
+  console.log(`✅ [Scenario] Generated a TR -> CN login event pair 2 minutes apart.`);
 }
 
-/**
- * Rastgele Arka Plan SOC Trafiği Jeneratörü
- */
 async function generateBackgroundNoise() {
   const eventTypes: IngestEventPayload["type"][] = [
     "AUTH_LOGIN",
@@ -187,13 +169,10 @@ async function generateBackgroundNoise() {
   ]);
 }
 
-/**
- * Ana döngü
- */
 async function main() {
   console.log(`=======================================================`);
   console.log(`🛡️ WATCHLIGHT ATTACK TRAFFIC SIMULATOR v${WATCHLIGHT_VERSION}`);
-  console.log(`Hedef Endpoint: ${INGEST_URL}`);
+  console.log(`Target endpoint: ${INGEST_URL}`);
   console.log(`=======================================================\n`);
 
   const arg = process.argv[2];
@@ -214,27 +193,24 @@ async function main() {
         await simulateImpossibleTravel();
         break;
       default:
-        console.log(`Bilinmeyen senaryo: ${scenarioName}. Seçenekler: bruteforce, portscan, exfil, travel`);
+        console.log(`Unknown scenario: ${scenarioName}. Options: bruteforce, portscan, exfil, travel`);
     }
     process.exit(0);
   }
 
-  console.log(`[Simulator] Sürekli arka plan trafiği ve periyodik saldırı simülasyonu başlatıldı...`);
-  console.log(`[Simulator] Durdurmak için Ctrl+C tuşlayın.\n`);
+  console.log(`[Simulator] Continuous background traffic and periodic attack simulation started...`);
+  console.log(`[Simulator] Press Ctrl+C to stop.\n`);
 
-  // Her 3 saniyede 1 normal arka plan trafiği
   setInterval(() => {
     generateBackgroundNoise();
   }, 3000);
 
-  // Her 30 saniyede bir rastgele bir saldırı senaryosu
   const scenarios = [simulateBruteForce, simulatePortScan, simulateDataExfiltration, simulateImpossibleTravel];
   setInterval(() => {
     const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
     randomScenario();
   }, 30000);
 
-  // İlk açılışta hemen bir brute force fırlat
   setTimeout(() => {
     simulateBruteForce();
   }, 2000);

@@ -26,7 +26,6 @@ export async function GET(req: NextRequest) {
         prisma.securityEvent.count({ where: { timestamp: { gte: oneMinuteAgo } } }),
       ]);
 
-    // Son 1 saatteki en aktif saldırgan IP'ler
     const topIpsRaw = await prisma.$queryRaw<TopIpStat[]>`
       SELECT "sourceIp", COUNT(*)::int as count, "geoCountry"
       FROM "SecurityEvent"
@@ -36,7 +35,6 @@ export async function GET(req: NextRequest) {
       LIMIT 5;
     `;
 
-    // Severity bazlı dağılım
     const severityGroups = await prisma.alert.groupBy({
       by: ["severity"],
       _count: { severity: true },
@@ -52,7 +50,6 @@ export async function GET(req: NextRequest) {
       severityDistribution[g.severity] = g._count.severity;
     });
 
-    // Gerçek son 60 saniyelik Event Per Second (EPS)
     const currentEps = Math.max(Math.round(recentEventsCount / 60), recentEventsCount > 0 ? 1 : 0);
 
     return NextResponse.json({

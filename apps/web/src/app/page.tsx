@@ -46,7 +46,6 @@ function SOCDashboard({
   const [isSimulating, setIsSimulating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Verileri çek
   const fetchData = useCallback(async () => {
     try {
       const [resStats, resAlerts, resIncidents] = await Promise.all([
@@ -75,9 +74,6 @@ function SOCDashboard({
   useEffect(() => {
     fetchData();
 
-    // Server-Sent Events (SSE) Canlı Bağlantısı (Faz 13)
-    // EventSource custom header taşıyamadığından, uzun ömürlü access token yerine
-    // kısa ömürlü tek kullanımlık bir ticket alınıp URL'de ona yer verilir.
     let eventSource: EventSource | null = null;
     let cancelled = false;
 
@@ -115,11 +111,9 @@ function SOCDashboard({
     };
   }, [accessToken, authFetch, fetchData]);
 
-  // Simülatör tetikleme fonksiyonu
   const handleTriggerSimulation = async (scenario: string) => {
     setIsSimulating(true);
     try {
-      // Simülatör endpoint'ine hızlı event gönderimi
       const events: any[] = [];
       const testIp = `185.220.101.${Math.floor(Math.random() * 200 + 10)}`;
 
@@ -159,7 +153,6 @@ function SOCDashboard({
         body: JSON.stringify({ events }),
       });
 
-      // Verileri anında tazele
       setTimeout(fetchData, 600);
     } catch (err) {
       console.error("Simulation trigger failed:", err);
@@ -170,7 +163,6 @@ function SOCDashboard({
 
   return (
     <div className="flex min-h-screen bg-soc-base text-gray-100 font-sans selection:bg-soc-accent/30 selection:text-white">
-      {/* Yan Menü */}
       <Sidebar
         currentTab={currentTab}
         setCurrentTab={setCurrentTab}
@@ -180,7 +172,6 @@ function SOCDashboard({
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto lg:pl-0">
-        {/* Üst Çubuk */}
         <Header
           eps={stats?.summary?.eps || 420}
           onTriggerSimulation={handleTriggerSimulation}
@@ -189,7 +180,6 @@ function SOCDashboard({
           currentTab={currentTab}
         />
 
-        {/* Ana İçerik */}
         <main
           className={
             currentTab === "threatmap"
@@ -287,7 +277,6 @@ function SOCDashboard({
                           <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-soc-high/15 text-soc-high border border-soc-high/40">
                             {inc.priority} • {inc.status}
                           </span>
-                          {/* Incident Lifecycle Status Actions */}
                           {inc.status === "OPEN" && (
                             <button
                               onClick={async () => {
@@ -353,7 +342,6 @@ function SOCDashboard({
         </main>
       </div>
 
-      {/* Incident Modal */}
       {selectedAlertForIncident && (
         <IncidentModal
           alert={selectedAlertForIncident}

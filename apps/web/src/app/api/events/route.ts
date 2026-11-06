@@ -4,7 +4,6 @@ import { authenticateRequest } from "@/lib/auth-guard";
 import { EventType, EventTypeEnum } from "@watchlight/shared";
 
 export async function GET(req: NextRequest) {
-  // Analist veya Admin yetkisi kontrolü
   const auth = await authenticateRequest(req);
   if (auth.response) {
     return auth.response;

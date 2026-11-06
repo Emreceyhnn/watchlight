@@ -25,11 +25,9 @@ export function LoginForm() {
 
   return (
     <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden bg-soc-base text-gray-200 antialiased">
-      {/* Ambient background */}
       <div className="fixed inset-0 soc-grid-bg pointer-events-none" />
       <div className="fixed inset-0 soc-radial-glow pointer-events-none" />
 
-      {/* Top bar */}
       <header className="relative z-10 w-full px-6 py-4 flex justify-between items-center border-b border-white/[0.06] bg-soc-base/60 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-soc-accent/10 border border-soc-accent/30 flex items-center justify-center text-soc-accent shadow-[0_0_15px_rgba(91,140,255,0.2)]">
@@ -48,7 +46,6 @@ export function LoginForm() {
         </div>
       </header>
 
-      {/* Auth card */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-[420px]">
           <div className="mb-3 flex items-center justify-between px-1">

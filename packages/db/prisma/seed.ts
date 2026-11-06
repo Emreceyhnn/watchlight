@@ -6,17 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding Watchlight database...");
 
-  // 1. Varsayılan Kullanıcılar
-  // Prod'da ADMIN/ANALYST şifreleri .env üzerinden verilmelidir; bu dosyadaki
-  // değerler artık public olduğundan (kaynak kodda), prod'da env olmadan
-  // seed çalıştırmak hataya düşer.
   const isProd = process.env.NODE_ENV === "production";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
   const analystPassword = process.env.SEED_ANALYST_PASSWORD;
 
   if (isProd && (!adminPassword || !analystPassword)) {
     throw new Error(
-      "SEED_ADMIN_PASSWORD ve SEED_ANALYST_PASSWORD prod ortamında zorunludur."
+      "SEED_ADMIN_PASSWORD and SEED_ANALYST_PASSWORD are required in production."
     );
   }
 
@@ -25,7 +21,7 @@ async function main() {
 
   if (!isProd) {
     console.warn(
-      "⚠️  Geliştirme modu: varsayılan demo şifreleri kullanılıyor. Prod'da SEED_ADMIN_PASSWORD / SEED_ANALYST_PASSWORD set edin."
+      "⚠️  Development mode: using default demo passwords. Set SEED_ADMIN_PASSWORD / SEED_ANALYST_PASSWORD in production."
     );
   }
 
@@ -53,7 +49,6 @@ async function main() {
 
   console.log(`👤 Users seeded: ${admin.email}, ${analyst.email}`);
 
-  // 2. Hazır Temel SIEM Kural Kütüphanesi
   const defaultRules = [
     {
       name: "Brute Force Attack",

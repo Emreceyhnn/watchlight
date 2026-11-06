@@ -7,12 +7,10 @@ import { rateLimit } from "@/lib/rate-limit";
 
 const log = createLogger("web:auth");
 
-// Sabit zamanlı karşılaştırma için sahte bcrypt hash'i (kullanıcı bulunamadığında timing attack'ı önler)
 const DUMMY_HASH = "$2a$10$wN17qGz8W22Gk8fD99uPzeP/aE0z58o7hPj75B0x3JqT2Fw7jVw1q";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. IP bazlı Rate Limiting (5 dakikada en fazla 5 deneme)
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
     const rl = await rateLimit(`login:ip:${ip}`, 5, 300);
 
@@ -22,7 +20,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: {
             code: "RATE_LIMITED",
-            message: `Çok fazla başarısız giriş denemesi. Lütfen ${rl.resetSec} saniye sonra tekrar deneyin.`,
+            message: `Too many failed login attempts. Please try again in ${rl.resetSec} seconds.`,
           },
         },
         {
@@ -57,7 +55,6 @@ export async function POST(req: NextRequest) {
       where: { email },
     });
 
-    // 2. Timing attack koruması: Kullanıcı olmasa bile bcrypt.compare çalıştırılır
     const hashToCompare = user ? user.password : DUMMY_HASH;
     const isMatch = await bcrypt.compare(password, hashToCompare);
 
@@ -92,12 +89,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Refresh token HTTP-Only Cookie olarak kaydedilir
     response.cookies.set("wl_refresh_token", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 3600, // 7 gün
+      maxAge: 7 * 24 * 3600,
       path: "/",
     });
 

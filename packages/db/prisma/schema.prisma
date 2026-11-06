@@ -87,11 +87,11 @@ model Rule {
   name            String      @unique
   description     String
   eventTypes      EventType[]
-  windowSec       Int         @default(600) // 10 dakika
+  windowSec       Int         @default(600)
   threshold       Int         @default(5)
   severity        Severity    @default(MEDIUM)
   attackTactic    String
-  attackTechnique String      // Örn: T1110.001
+  attackTechnique String
   attackName      String
   enabled         Boolean     @default(true)
   createdAt       DateTime    @default(now())
@@ -155,7 +155,7 @@ model User {
   email     String   @unique
   name      String?
   role      Role     @default(ANALYST)
-  password  String   // bcrypt veya argon2 hash
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

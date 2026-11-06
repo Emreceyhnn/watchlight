@@ -1,8 +1,4 @@
 #!/bin/sh
-# Prod/deploy DB bootstrap: safe to re-run on every deploy.
-# - First ever run against an existing hand-created schema: baseline it, then apply migrations.
-# - Every later run: just apply any new migrations (no data loss, no destructive push).
-# - Seed only runs once (skipped if an admin user already exists).
 set -e
 
 export CHECKPOINT_DISABLE=1

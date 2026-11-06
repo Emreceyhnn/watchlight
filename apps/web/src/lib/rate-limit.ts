@@ -12,12 +12,6 @@ export interface RateLimitResult {
   resetSec: number;
 }
 
-/**
- * Redis tabanlı Sliding Window / Token Bucket Rate Limiter
- * @param identifier İstemci IP adresi veya API anahtarı
- * @param limit İzin verilen maksimum istek sayısı
- * @param windowSec Zaman penceresi (saniye cinsinden)
- */
 export async function rateLimit(
   identifier: string,
   limit = 100,
@@ -50,8 +44,6 @@ export async function rateLimit(
       resetSec: ttl > 0 ? ttl : windowSec,
     };
   } catch (error) {
-    // Redis erişilemezse uygulamanın çökmesini engelle (graceful degradation),
-    // ama bu bir güvenlik kontrolünün devre dışı kaldığı anlamına gelir — error seviyesinde logla.
     log.error({ err: error }, "Redis unavailable — rate limiting is DISABLED (fail-open)");
     return {
       success: true,
@@ -62,9 +54,6 @@ export async function rateLimit(
   }
 }
 
-/**
- * X-API-Key doğrulama yardımcısı (Log toplayıcılar & simülatör için)
- */
 export function validateApiKey(req: NextRequest): boolean {
   const apiKey = req.headers.get("x-api-key");
   const configuredKey = process.env.INGEST_API_KEY;

@@ -10,7 +10,6 @@ interface ThreatMapProps {
   fill?: boolean;
 }
 
-// Ülke koordinat eşlemeleri (Demo ve küresel saldırı kaynakları için)
 const COUNTRY_COORDINATES: Record<string, [number, number]> = {
   TR: [39.9334, 32.8597],
   US: [37.0902, -95.7129],
@@ -26,9 +25,6 @@ const COUNTRY_COORDINATES: Record<string, [number, number]> = {
 
 const CARTO_API_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY;
 
-// Anahtarsız kota aşıldığında CARTO "API KEY REQUIRED" görseli döndürüyor;
-// anahtar varsa CARTO'nun resmi key'li uç noktasını, yoksa anahtar
-// gerektirmeyen OpenStreetMap karo sunucusunu kullan.
 const TILE_URL = CARTO_API_KEY
   ? `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`
   : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -46,16 +42,12 @@ export default function ThreatMap({ alerts, onOpenIncidentModal, fill }: ThreatM
 
   if (!mounted) return null;
 
-  // Haritada gösterilecek anomali noktaları
-  // Aynı ülkeden gelen birden fazla alert üst üste binmesin diye küçük bir jitter uygulanır
   const countryOccurrence: Record<string, number> = {};
   const points = alerts.slice(0, 15).map((a, i) => {
-    // Kaynak ülke veya varsayılan koordinat
     const country = a.geoCountry || "RU";
     const base = COUNTRY_COORDINATES[country] || [50 + (i % 5), 20 + (i % 10)];
     const occurrence = countryOccurrence[country] || 0;
     countryOccurrence[country] = occurrence + 1;
-    // Her tekrar için küçük bir dairesel ofset (aynı ülkede maks. ~8 marker ayırt edilebilir)
     const angle = occurrence * 0.9;
     const radius = occurrence === 0 ? 0 : 1.2 + occurrence * 0.4;
     const coords: [number, number] = [
@@ -99,7 +91,6 @@ export default function ThreatMap({ alerts, onOpenIncidentModal, fill }: ThreatM
         scrollWheelZoom={false}
         className="h-full w-full bg-[#0B0F14]"
       >
-        {/* CartoDB DarkMatter GL Tiles (SOC karanlık tema için optimize) */}
         <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
 
         {points.map((pt) => {

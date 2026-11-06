@@ -17,8 +17,6 @@ export function Sidebar({
   onClose,
 }: SidebarProps) {
   const [workerOnline, setWorkerOnline] = useState<boolean | null>(() => {
-    // İlk render'da son bilinen durumu localStorage'dan oku; böylece sayfa
-    // geçişlerinde kısa süreli "CHECKING" titremesi oluşmaz.
     try {
       const cached = localStorage.getItem("watchlight:workerOnline");
       return cached === null ? null : cached === "true";
@@ -38,7 +36,6 @@ export function Sidebar({
           try {
             localStorage.setItem("watchlight:workerOnline", String(online));
           } catch {
-            // localStorage kullanılamıyorsa sessizce yoksay
           }
         } else {
           setWorkerOnline(false);
@@ -74,7 +71,6 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {isOpen && (
         <div
           onClick={onClose}
@@ -88,7 +84,6 @@ export function Sidebar({
         }`}
       >
         <div className="space-y-4">
-          {/* Logo & Mobile Close */}
           <div className="flex items-center justify-between gap-2 px-2 py-1.5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-soc-accent/10 border border-soc-accent/30 text-soc-accent shadow-[0_0_12px_rgba(91,140,255,0.25)]">
@@ -114,7 +109,6 @@ export function Sidebar({
             )}
           </div>
 
-          {/* Nav Links */}
           <nav className="space-y-0.5 font-heading text-sm tracking-tight pt-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -146,7 +140,6 @@ export function Sidebar({
           </nav>
         </div>
 
-        {/* Footer SOC Status */}
         <div className="pt-3 border-t border-soc-border/80">
           <div className="flex items-center justify-between mb-2 px-1">
             <span className="text-[11px] text-gray-400 font-mono">Worker Status</span>

@@ -24,11 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Access token in-memory tutulur, sayfa yenilemede refresh cookie üzerinden tazelenir.
   const accessTokenRef = useRef<string | null>(null);
   accessTokenRef.current = accessToken;
 
-  // In-flight refresh promise mutex to prevent thundering herd race condition
   const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
 
   const tryRefresh = useCallback(async (): Promise<boolean> => {
@@ -72,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, message: data?.error?.message || "Giriş başarısız." };
+        return { success: false, message: data?.error?.message || "Login failed." };
       }
       setAccessToken(data.data.accessToken);
       setUser(data.data.user);
@@ -91,7 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Her API çağrısına Authorization header ekler; 401 alınırsa bir kez refresh deneyip tekrar dener.
   const authFetch = useCallback(
     async (input: string, init: RequestInit = {}) => {
       const doFetch = (token: string | null) =>

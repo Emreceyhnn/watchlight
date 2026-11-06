@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth-guard";
 import { redis } from "@/lib/redis";
 
-/**
- * Kısa ömürlü, tek kullanımlık SSE bağlantı ticket'ı.
- * EventSource custom header gönderemediği için access token'ı URL'e koymak
- * yerine, burada normal auth ile (cookie/header) doğrulanmış kullanıcı için
- * Redis'te 30 saniyelik tek kullanımlık bir ticket üretilir. /api/stream bu
- * ticket'ı tüketip siler; URL'de uzun ömürlü bir JWT taşınmaz.
- */
 export async function POST(req: NextRequest) {
   const auth = await authenticateRequest(req);
   if (auth.response) return auth.response;

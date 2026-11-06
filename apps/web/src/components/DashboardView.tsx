@@ -27,7 +27,6 @@ import {
   Bar,
 } from "recharts";
 
-// Leaflet SSR hydration hatasını önlemek için dinamik import
 const ThreatMap = dynamic(() => import("@/components/ThreatMap"), {
   ssr: false,
   loading: () => (
@@ -57,7 +56,6 @@ export function DashboardView({
   alerts,
   onOpenIncidentModal,
 }: DashboardProps) {
-  // Dinamik istemci zaman serisi üretimi (son 6 nokta)
   const [chartData, setChartData] = useState(() => {
     const points = [];
     const now = new Date();
@@ -96,9 +94,7 @@ export function DashboardView({
 
   return (
     <div className="space-y-5">
-      {/* 1. KPI Kartları */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Total Ingestion */}
         <div className="bg-soc-card border border-soc-border rounded-lg p-3.5 flex flex-col justify-between hover:border-gray-700/80 transition-all">
           <div className="flex items-center justify-between">
             <span className="font-heading text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -118,7 +114,6 @@ export function DashboardView({
           </div>
         </div>
 
-        {/* Active Alerts */}
         <div className="bg-soc-card border border-soc-border rounded-lg p-3.5 flex flex-col justify-between hover:border-gray-700/80 transition-all">
           <div className="flex items-center justify-between">
             <span className="font-heading text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -147,7 +142,6 @@ export function DashboardView({
           </div>
         </div>
 
-        {/* Critical Alerts */}
         <div className="bg-soc-card border border-soc-border rounded-lg p-3.5 flex flex-col justify-between hover:border-gray-700/80 transition-all">
           <div className="flex items-center justify-between">
             <span className="font-heading text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -166,7 +160,6 @@ export function DashboardView({
           </div>
         </div>
 
-        {/* Open Incidents */}
         <div className="bg-soc-card border border-soc-border rounded-lg p-3.5 flex flex-col justify-between hover:border-gray-700/80 transition-all">
           <div className="flex items-center justify-between">
             <span className="font-heading text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -186,9 +179,7 @@ export function DashboardView({
         </div>
       </section>
 
-      {/* 2. Grafikler Katmanı */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* EPS Zaman Serisi */}
         <div className="lg:col-span-2 bg-soc-card border border-soc-border rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -229,7 +220,6 @@ export function DashboardView({
           </div>
         </div>
 
-        {/* Severity Dağılımı Donut */}
         <div className="bg-soc-card border border-soc-border rounded-lg p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-heading font-semibold text-gray-200 uppercase tracking-wider">
@@ -278,7 +268,6 @@ export function DashboardView({
         </div>
       </section>
 
-      {/* 3. Coğrafi Tehdit Haritası */}
       <section className="bg-soc-card border border-soc-border rounded-lg p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -296,7 +285,6 @@ export function DashboardView({
         <ThreatMap alerts={alerts} />
       </section>
 
-      {/* 4. Canlı Alert Timeline */}
       <section className="bg-soc-card border border-soc-border rounded-lg p-5">
         <div className="flex items-center justify-between mb-4">
           <div>

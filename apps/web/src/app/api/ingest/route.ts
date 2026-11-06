@@ -9,7 +9,6 @@ const MAX_BODY_BYTES = 256 * 1024;
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. API Key Doğrulama
     if (!validateApiKey(req)) {
       return NextResponse.json(
         {
@@ -23,7 +22,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Rate limiting (API key başına 1,000+ EPS desteği için 3,000 req/60s)
     const apiKey = req.headers.get("x-api-key")!;
     const limitResult = await rateLimit(`ingest:${apiKey}`, 3000, 60);
     if (!limitResult.success) {
@@ -44,7 +42,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Chunked Transfer DoS koruması: Body stream edilirken bayt sınırını zorla
     let rawText = "";
     if (req.body) {
       const reader = req.body.getReader();
@@ -76,7 +73,6 @@ export async function POST(req: NextRequest) {
 
     const body = rawText ? JSON.parse(rawText) : {};
 
-    // 3. Ham Log Desteği (raw log formatı gönderilmişse parse et)
     if (body.raw && body.sourceType) {
       const parsed = parseRawLog(body);
       if (!parsed) {
@@ -109,7 +105,6 @@ export async function POST(req: NextRequest) {
       return await processEvents([validated.data]);
     }
 
-    // 3. Batch Event Formatı
     if (Array.isArray(body.events)) {
       const batchResult = IngestBatchPayloadSchema.safeParse(body);
       if (!batchResult.success) {
@@ -128,7 +123,6 @@ export async function POST(req: NextRequest) {
       return await processEvents(batchResult.data.events);
     }
 
-    // 4. Tekil Event Formatı
     const singleResult = IngestEventPayloadSchema.safeParse(body);
     if (!singleResult.success) {
       return NextResponse.json(
@@ -160,9 +154,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * Event'leri veritabanına kaydeder ve Redis Pub/Sub üzerinden fırlatır
- */
 async function processEvents(rawEvents: any[]) {
   const eventsToCreate = rawEvents.map((evt) => ({
     type: evt.type,
@@ -178,12 +169,10 @@ async function processEvents(rawEvents: any[]) {
     timestamp: evt.timestamp ? new Date(evt.timestamp) : new Date(),
   }));
 
-  // Veritabanına toplu kayıt
   const created = await prisma.securityEvent.createMany({
     data: eventsToCreate,
   });
 
-  // Redis Pub/Sub üzerinden anlık yayınlama (Pipelining ile 1,000+ EPS optimizasyonu)
   try {
     if (eventsToCreate.length > 0) {
       const pipe = redis.pipeline();

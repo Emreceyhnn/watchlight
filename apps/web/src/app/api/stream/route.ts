@@ -4,14 +4,6 @@ import { redis as sharedRedis } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Server-Sent Events (SSE) Canlı Yayın Gateway'i
- * Tarayıcı EventSource ile tek yönlü ve son derece stabil canlı stream sağlar.
- * EventSource custom header gönderemediğinden, uzun ömürlü access JWT yerine
- * /api/stream/ticket üzerinden alınan 30 saniyelik tek kullanımlık bir ticket
- * query param olarak taşınır. Ticket burada tüketilir (GETDEL) ve bir daha
- * kullanılamaz; URL/proxy log/history'de görünse bile değersizdir.
- */
 export async function GET(req: NextRequest) {
   const ticket = req.nextUrl.searchParams.get("ticket");
 
@@ -53,7 +45,6 @@ export async function GET(req: NextRequest) {
         await sub.connect();
         await sub.subscribe("events:stream", "alerts:stream");
 
-        // Bağlantı açılış mesajı
         controller.enqueue(
           encoder.encode(`event: connected\ndata: ${JSON.stringify({ status: "STREAM_CONNECTED" })}\n\n`)
         );
@@ -65,7 +56,6 @@ export async function GET(req: NextRequest) {
           );
         });
 
-        // 25 saniyede bir ping/keepalive gönderimi
         const intervalId = setInterval(() => {
           controller.enqueue(encoder.encode(`: keepalive\n\n`));
         }, 25000);
@@ -87,7 +77,7 @@ export async function GET(req: NextRequest) {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
-      "X-Accel-Buffering": "no", // Nginx proxy buffering'i devre dışı bırakır
+      "X-Accel-Buffering": "no",
     },
   });
 }

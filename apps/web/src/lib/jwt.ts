@@ -12,9 +12,6 @@ function requireSecret(name: string): string {
   return value;
 }
 
-// Lazy + memoize: Next.js build-time "collect page data" aşamasında route
-// modülleri import edilir ama runtime env henüz yüklü olmayabilir; secret'lar
-// bu yüzden module-load anında değil, ilk gerçek kullanımda doğrulanır.
 let accessSecretCache: Uint8Array | null = null;
 let refreshSecretCache: Uint8Array | null = null;
 
@@ -43,7 +40,7 @@ export async function signAccessToken(payload: AuthUserPayload): Promise<string>
   return await new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("15m") // 15 dakika geçerlilik
+    .setExpirationTime("15m")
     .sign(getAccessSecret());
 }
 
@@ -52,7 +49,7 @@ export async function signRefreshToken(payload: AuthUserPayload): Promise<string
   return await new SignJWT({ ...payload, jti })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d") // 7 gün geçerlilik
+    .setExpirationTime("7d")
     .sign(getRefreshSecret());
 }
 
@@ -79,15 +76,13 @@ export async function verifyRefreshToken(
     const { payload } = await jwtVerify(token, secret);
     const jti = payload.jti as string | undefined;
 
-    // Denylist kontrolü (logout veya iptal edilmiş refresh token)
-    // Güvenlik Kuralı: Fail-Closed olmalıdır. Redis'e erişilemezse token reddedilir.
     if (jti) {
       try {
         const isRevoked = await redis.get(`denylist:token:${jti}`);
         if (isRevoked) return null;
       } catch (err) {
         log.error({ err }, "Redis denylist check failed — failing closed for safety");
-        return null; // Fail-closed: Doğrulanamayan token yetkilendirilmez
+        return null;
       }
     }
 

@@ -1,8 +1,3 @@
-/**
- * Watchlight Yüksek Performanslı Ingestion Benchmark Betiği
- * 10,000 Event / Saniyede EPS ve Gecikme Ölçümü
- */
-
 const INGEST_URL = process.env.INGEST_URL || "http://localhost:3000/api/ingest";
 if (!process.env.INGEST_API_KEY) {
   console.error("INGEST_API_KEY is required (set it in your .env).");
@@ -10,8 +5,8 @@ if (!process.env.INGEST_API_KEY) {
 }
 const API_KEY = process.env.INGEST_API_KEY;
 const TOTAL_EVENTS = 10000;
-const BATCH_SIZE = 250; // Her HTTP isteğinde 250 event
-const CONCURRENCY = 4; // Eşzamanlı 4 worker pipeline
+const BATCH_SIZE = 250;
+const CONCURRENCY = 4;
 
 console.log(`=======================================================`);
 console.log(`🚀 WATCHLIGHT INGESTION & PIPELINE BENCHMARK`);
@@ -91,7 +86,6 @@ async function runBenchmark() {
     }
   };
 
-  // Paralel worker'ları başlat
   const workers = Array.from({ length: CONCURRENCY }, () => worker());
   await Promise.all(workers);
 

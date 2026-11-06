@@ -47,7 +47,6 @@ export async function POST(req: NextRequest) {
       data: parse.data,
     });
 
-    // Worker'a kural yenileme mesajı gönder
     await redis.publish("rules:reload", "1");
 
     return NextResponse.json({ success: true, data: newRule }, { status: 201 });

@@ -18,8 +18,22 @@ end-to-end in an afternoon.
 
 ---
 
+## Demo
+
+![Watchlight SOC dashboard](docs/screenshot-dashboard.jpg)
+*Live event ingestion rate, alert severity matrix, and the threat geolocation radar — all updating in real time over SSE.*
+
+![Global threat geolocation radar](docs/screenshot-threat-map.jpg)
+*Full-screen attack-origin visualization. Click any marker to triage the underlying alert.*
+
+![SIEM security alerts queue](docs/screenshot-alerts.jpg)
+*Every alert is mapped to a MITRE ATT&CK technique ID and ready for one-click triage into an incident.*
+
+---
+
 ## Table of Contents
 
+- [Demo](#demo)
 - [What it does](#what-it-does)
 - [Architecture](#architecture)
 - [Monorepo layout](#monorepo-layout)

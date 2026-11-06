@@ -26,12 +26,8 @@ interface IngestedEvent {
   payload?: any;
 }
 
-// Aktif kural önbelleği
 let cachedRules: Rule[] = [];
 
-/**
- * Kuralları veritabanından çekip belleğe alır
- */
 async function loadRules() {
   try {
     cachedRules = await prisma.rule.findMany({
@@ -43,37 +39,28 @@ async function loadRules() {
   }
 }
 
-/**
- * Sliding Window Aggregation & Eşik Kontrolü
- */
 async function evaluateEvent(event: IngestedEvent) {
   for (const rule of cachedRules) {
     if (!rule.eventTypes.includes(event.type)) {
       continue;
     }
 
-    // Impossible Travel (T1078) için anomali kontrolü: Kullanıcı farklı ülkeden oturum açtı mı?
     if (rule.attackTechnique === "T1078" && event.username) {
       const geoKey = `user:last_geo:${event.username}`;
       const currentCountry = event.geoCountry || "TR";
       const lastCountry = await redis.get(geoKey);
 
-      // Son ülkeyi güncelle (1 saat boyunca sakla)
       await redis.setex(geoKey, rule.windowSec, currentCountry);
 
       if (!lastCountry || lastCountry === currentCountry) {
-        // İlk giriş veya aynı ülke içindeki normal oturum açılışı; Impossible travel tetiklenmez
         continue;
       }
-      // Farklı ülkeden giriş tespit edildi:
       log.warn(
         { username: event.username, from: lastCountry, to: currentCountry, windowSec: rule.windowSec },
         "Impossible travel detected"
       );
     }
 
-    // Anahtar formatı: rule:{ruleId}:source:{sourceIp}
-    // Impossible Travel için kullanıcı bazlı: rule:{ruleId}:user:{username}
     const isUserBased = rule.attackTechnique === "T1078" && event.username;
     const targetKey = isUserBased ? `user:${event.username}` : `ip:${event.sourceIp}`;
     const windowKey = `window:rule:${rule.id}:${targetKey}`;
@@ -84,7 +71,6 @@ async function evaluateEvent(event: IngestedEvent) {
         await redis.expire(windowKey, rule.windowSec);
       }
 
-      // Eşik aşıldı mı?
       if (count >= rule.threshold) {
         await triggerAlert(rule, event, count);
       }
@@ -94,17 +80,12 @@ async function evaluateEvent(event: IngestedEvent) {
   }
 }
 
-/**
- * Alert Üretimi & Throttle (Deduplication)
- */
 async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: number) {
-  // Throttling key: alert çığının önüne geçmek için aynı pencere boyunca 2. alert üretilmez
   const throttleKey = `throttle:rule:${rule.id}:ip:${event.sourceIp}`;
 
-  // Atomik NX kontrolü ile Race Condition engelleme
   const isThrottled = await redis.get(throttleKey);
   if (isThrottled) {
-    return; // Halihazırda bu kural ve IP için açık bir alarm var
+    return;
   }
 
   log.warn(
@@ -113,7 +94,6 @@ async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: numb
   );
 
   try {
-    // 1. Veritabanına Alert kaydı
     const newAlert = await prisma.alert.create({
       data: {
         ruleId: rule.id,
@@ -128,14 +108,11 @@ async function triggerAlert(rule: Rule, event: IngestedEvent, currentCount: numb
       },
     });
 
-    // 2. Throttle kilidini SADECE DB kaydı başarılı olduktan sonra atomik ayarla
     await redis.set(throttleKey, "active", "EX", rule.windowSec, "NX");
 
-    // 3. Redis Pub/Sub üzerinden WebSocket/SSE sunucusuna alert yayınlama
     await redis.publish("alerts:stream", JSON.stringify(newAlert));
   } catch (err) {
     log.error({ err }, "Failed to persist alert");
-    // Hata durumunda olası throttle anahtarını temizle
     await redis.del(throttleKey).catch(() => {});
   }
 }
@@ -145,7 +122,6 @@ async function startEngine() {
 
   await loadRules();
 
-  // Redis kanallarına abone ol
   await subRedis.subscribe("events:stream", "rules:reload");
 
   subRedis.on("message", async (channel, message) => {
@@ -167,16 +143,13 @@ async function startEngine() {
 
   log.info("Subscribed to 'events:stream' and 'rules:reload'");
 
-  // Worker Heartbeat (every 5 seconds)
   const hbInterval = setInterval(async () => {
     try {
       await redis.set("worker:heartbeat", Date.now().toString(), "EX", 15);
     } catch (e) {
-      // Ignore transient errors
     }
   }, 5000);
 
-  // Graceful Shutdown Handlers (SRE FM-03)
   const shutdown = async (signal: string) => {
     log.info({ signal }, "Received shutdown signal, starting graceful shutdown");
     clearInterval(hbInterval);

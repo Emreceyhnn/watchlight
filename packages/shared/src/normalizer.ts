@@ -5,31 +5,18 @@ export interface RawLogEntry {
   sourceType: "nginx" | "auth_log" | "generic_json";
 }
 
-/**
- * Nginx Combined Log Parser:
- * format: $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent"
- */
 const NGINX_REGEX =
   /^(\S+)\s+-\s+(\S+)\s+\[([^\]]+)\]\s+"(\S+)\s+(\S+)\s+([^"]*)"\s+(\d{3})\s+(\d+)\s+"([^"]*)"\s+"([^"]*)"/;
 
-/**
- * Linux /var/log/auth.log (sshd) Parser:
- * Örnek: "Failed password for invalid user root from 192.168.1.100 port 45123 ssh2"
- * Örnek: "Accepted password for ubuntu from 192.168.1.50 port 51234 ssh2"
- */
 const SSHD_FAILED_REGEX =
   /Failed password for (?:invalid user )?(\S+) from (\S+) port (\d+)/i;
 const SSHD_ACCEPTED_REGEX =
   /Accepted (?:password|publickey) for (\S+) from (\S+) port (\d+)/i;
 
-/**
- * Basit dahili IP -> Ülke tahminleme (Demo ve offline SOC çalışması için)
- */
 export function lookupGeoCountry(ip: string): string {
   if (ip.startsWith("10.") || ip.startsWith("192.168.") || ip === "127.0.0.1") {
     return "TR";
   }
-  // Deterministic hash tabanlı ülke atama (demo simülasyonları için tutarlı)
   const countries = ["TR", "US", "DE", "RU", "CN", "GB", "NL", "FR", "JP", "BR"];
   let hash = 0;
   for (let i = 0; i < ip.length; i++) {

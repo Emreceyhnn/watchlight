@@ -57,7 +57,6 @@ export async function POST(req: NextRequest) {
 
     const creatorUser = auth.user?.email || auth.user?.name || "SOC Analyst";
 
-    // Alert'in durumunu ASSIGNED yap ve incident oluştur
     const [incident] = await prisma.$transaction([
       prisma.incident.create({
         data: {

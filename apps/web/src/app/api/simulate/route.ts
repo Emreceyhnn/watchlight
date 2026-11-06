@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateRequest } from "@/lib/auth-guard";
 
-/**
- * Dashboard'daki simülasyon tetikleyicisi için sunucu-taraflı köprü.
- * Gerçek INGEST_API_KEY tarayıcıya hiç gönderilmez; burada eklenir.
- */
 export async function POST(req: NextRequest) {
   const auth = await authenticateRequest(req, ["ADMIN", "ANALYST"]);
   if (auth.response) return auth.response;

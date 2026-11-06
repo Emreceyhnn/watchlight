@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { IngestEventPayloadSchema, LoginInputSchema, DEFAULT_MITRE_TECHNIQUES } from "../index";
 
 describe("Shared Schemas & MITRE Matrix Validation", () => {
-  it("geçerli bir SecurityEvent şemasını hatasız doğrulamalı", () => {
+  it("validates a valid SecurityEvent schema without errors", () => {
     const validEvent = {
       timestamp: new Date().toISOString(),
       type: "AUTH_FAILED",
@@ -17,7 +17,7 @@ describe("Shared Schemas & MITRE Matrix Validation", () => {
     expect(res.success).toBe(true);
   });
 
-  it("geçersiz IP veya eksik zorunlu alanlarda Zod hatası üretmeli", () => {
+  it("produces a Zod error for an invalid IP or missing required fields", () => {
     const invalidEvent = {
       type: "INVALID_EVENT_TYPE",
       sourceIp: "",
@@ -27,7 +27,7 @@ describe("Shared Schemas & MITRE Matrix Validation", () => {
     expect(res.success).toBe(false);
   });
 
-  it("LoginInputSchema email ve parola uzunluğunu doğrulamalı", () => {
+  it("validates LoginInputSchema email format and password length", () => {
     const invalidLogin = { email: "not-an-email", password: "123" };
     const res = LoginInputSchema.safeParse(invalidLogin);
     expect(res.success).toBe(false);
@@ -37,7 +37,7 @@ describe("Shared Schemas & MITRE Matrix Validation", () => {
     expect(resValid.success).toBe(true);
   });
 
-  it("MITRE ATT&CK temel tekniklerinin tanımlı olduğunu doğrulamalı", () => {
+  it("validates that core MITRE ATT&CK techniques are defined", () => {
     const t1110 = DEFAULT_MITRE_TECHNIQUES["T1110.001"];
     expect(t1110).toBeDefined();
     expect(t1110?.name).toContain("Password Guessing");
