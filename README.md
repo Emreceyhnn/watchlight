@@ -20,6 +20,9 @@ end-to-end in an afternoon.
 
 ## Demo
 
+![Watchlight live attack simulation demo](docs/watchlight-live-demo.gif)
+*Triggering the built-in Brute Force / Port Scan simulators live — watch alert counts, the severity matrix, and the threat map update in real time with no page reload.*
+
 ![Watchlight SOC dashboard](docs/screenshot-dashboard.jpg)
 *Live event ingestion rate, alert severity matrix, and the threat geolocation radar — all updating in real time over SSE.*
 
