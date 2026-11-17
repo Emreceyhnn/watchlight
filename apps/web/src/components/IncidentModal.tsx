@@ -71,8 +71,9 @@ export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: 
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Incident Title</label>
+            <label htmlFor="incident-title" className="block text-xs font-medium text-gray-400 mb-1.5">Incident Title</label>
             <input
+              id="incident-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -83,8 +84,9 @@ export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5">Priority SLA</label>
+              <label htmlFor="incident-priority" className="block text-xs font-medium text-gray-400 mb-1.5">Priority SLA</label>
               <select
+                id="incident-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as IncidentPriority)}
                 className="w-full rounded-lg border border-soc-border bg-soc-card px-3 py-2.5 text-xs text-white focus:border-soc-accent focus:outline-none transition-colors"
@@ -98,8 +100,9 @@ export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: 
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5">Assignee</label>
+              <label htmlFor="incident-assignee" className="block text-xs font-medium text-gray-400 mb-1.5">Assignee</label>
               <input
+                id="incident-assignee"
                 type="text"
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
@@ -109,8 +112,9 @@ export function IncidentModal({ alert, onClose, onIncidentCreated, authFetch }: 
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">Triage Summary & Notes</label>
+            <label htmlFor="incident-summary" className="block text-xs font-medium text-gray-400 mb-1.5">Triage Summary & Notes</label>
             <textarea
+              id="incident-summary"
               rows={3}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
