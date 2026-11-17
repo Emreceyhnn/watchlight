@@ -72,9 +72,11 @@ export function Sidebar({
   return (
     <>
       {isOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="Close sidebar"
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 cursor-default bg-black/70 backdrop-blur-sm lg:hidden transition-opacity"
         />
       )}
 
