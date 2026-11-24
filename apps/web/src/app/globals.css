@@ -63,3 +63,40 @@ body {
 .leaflet-control-attribution a {
   color: #5b8cff !important;
 }
+
+/* Landing page --------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.landing a:focus-visible,
+.landing summary:focus-visible,
+.landing [tabindex]:focus-visible {
+  outline: 2px solid #5b8cff;
+  outline-offset: 3px;
+}
+
+.landing main:focus {
+  outline: none;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #5b8cff;
+  color: #0a0d12;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}

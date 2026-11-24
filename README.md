@@ -278,7 +278,8 @@ Seeded accounts (change these before anything public-facing):
 pnpm dev
 ```
 This runs `turbo run dev` across all apps with your root `.env` loaded via
-`dotenv-cli`. Open **http://localhost:3000** and log in.
+`dotenv-cli`. Open **http://localhost:3000** for the landing page, or go
+straight to **http://localhost:3000/dashboard** and log in.
 
 To run the attack simulator standalone instead of using the dashboard buttons:
 ```bash

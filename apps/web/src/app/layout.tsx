@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/lib/auth-context";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -59,7 +58,7 @@ export default function RootLayout({
       className={`dark ${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
     >
       <body className="min-h-screen bg-soc-base font-sans text-gray-100 antialiased selection:bg-soc-accent/30 selection:text-white">
-        <AuthProvider>{children}</AuthProvider>
+        {children}
       </body>
     </html>
   );

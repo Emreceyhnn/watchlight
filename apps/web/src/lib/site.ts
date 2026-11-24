@@ -12,7 +12,12 @@ export const SITE_URL = (
 
 export const SITE_NAME = "Watchlight";
 
-export const SITE_TITLE = "Watchlight — Mini-SIEM / SOC Dashboard";
+export const SITE_TITLE = "Watchlight — Open-Source Mini-SIEM & SOC Dashboard";
 
 export const SITE_DESCRIPTION =
-  "Real-time security monitoring, made simple. Rule-based threat detection mapped to MITRE ATT&CK, live alert streaming and full incident triage.";
+  "Open-source mini-SIEM with real-time detection, MITRE ATT&CK-mapped alerts, live streaming and incident triage. Self-host with Next.js, Redis and PostgreSQL.";
+
+export const GITHUB_URL = "https://github.com/Emreceyhnn/watchlight";
+
+/** The sign-in screen and SOC dashboard live here; "/" is the landing page. */
+export const DASHBOARD_PATH = "/dashboard";
