@@ -17,9 +17,17 @@ export default function SOCPortal() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-soc-base text-gray-300 font-mono text-sm">
-        Initializing Watchlight SOC Engine...
-      </div>
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-soc-base px-6 text-center text-gray-300">
+        <h1 className="font-heading text-2xl font-bold tracking-wider text-white">
+          Watchlight — Mini-SIEM / SOC Dashboard
+        </h1>
+        <p className="max-w-xl text-sm text-gray-400">
+          Real-time security monitoring, made simple. Rule-based threat
+          detection mapped to MITRE ATT&amp;CK, live alert streaming and full
+          incident triage.
+        </p>
+        <p className="font-mono text-sm">Initializing Watchlight SOC Engine...</p>
+      </main>
     );
   }
 
