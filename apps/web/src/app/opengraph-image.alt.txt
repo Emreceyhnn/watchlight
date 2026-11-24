@@ -1,0 +1,1 @@
+Watchlight: open-source mini-SIEM and SOC dashboard with MITRE ATT&CK-mapped alerts, live streaming and incident triage
