@@ -8,6 +8,7 @@ const NAV = [
   { href: "#features", label: "Features" },
   { href: "#rules", label: "Detection rules" },
   { href: "#faq", label: "FAQ" },
+  { href: "/blog", label: "Blog" },
 ] as const;
 
 export function LogoMark({ className = "" }: { className?: string }) {
@@ -35,15 +36,25 @@ export default function LandingHeader() {
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
-          {NAV.map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              className="text-sm font-medium text-gray-400 transition-colors hover:text-white"
-            >
-              {label}
-            </a>
-          ))}
+          {NAV.map(({ href, label }) =>
+            href.startsWith("/") ? (
+              <Link
+                key={href}
+                href={href}
+                className="text-sm font-medium text-gray-400 transition-colors hover:text-white"
+              >
+                {label}
+              </Link>
+            ) : (
+              <a
+                key={href}
+                href={href}
+                className="text-sm font-medium text-gray-400 transition-colors hover:text-white"
+              >
+                {label}
+              </a>
+            )
+          )}
         </nav>
 
         <div className="flex items-center gap-3">

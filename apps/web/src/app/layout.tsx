@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import {
@@ -59,6 +60,16 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-soc-base font-sans text-gray-100 antialiased selection:bg-soc-accent/30 selection:text-white">
         {children}
+        {process.env.NODE_ENV === "production" && (
+          // Cloudflare Web Analytics (cookieless, no personal data).
+          <Script
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            strategy="afterInteractive"
+            data-cf-beacon={JSON.stringify({
+              token: "6e51d337605e49ec97e1b34d1ec6af52",
+            })}
+          />
+        )}
       </body>
     </html>
   );

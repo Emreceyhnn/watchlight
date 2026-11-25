@@ -48,6 +48,11 @@ export default function LandingFooter() {
                   FAQ
                 </a>
               </li>
+              <li>
+                <Link href="/blog" className={linkClass}>
+                  Blog
+                </Link>
+              </li>
             </ul>
           </nav>
 
